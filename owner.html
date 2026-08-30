@@ -1,1952 +1,873 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RentScoot · Owner Dashboard</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>her · Fleet Owner Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* =============================================
+   DESIGN TOKENS — "her"
+   ============================================= */
+:root {
+    --plum: #592D55;
+    --plum-light: #7A4C74;
+    --plum-dark: #2B2030;
+    --pink: #EE3D82;
+    --pink-soft: #F9BBD4;
+    --pink-tint: #FDE6EE;
+    --gold: #F0B429;
+    --gold-tint: #FFF3D5;
+    --gold-text: #B48225;
+    --success: #1F9D5A;
+    --success-tint: #E4F5EB;
+    --danger: #D8527A;
+    --danger-tint: #FDE6EE;
+    --bg: #FFFAF7;
+    --card-bg: #FFFFFF;
+    --sidebar-bg: #FFFFFF;
+    --text-primary: #2B2030;
+    --text-secondary: #6E4A68;
+    --text-muted: #9D8292;
+    --border: #F1E4EA;
+    --shadow-sm: 0 2px 10px rgba(89,45,85,0.06);
+    --shadow-md: 0 8px 28px rgba(89,45,85,0.10);
+    --shadow-lg: 0 22px 55px rgba(89,45,85,0.20);
+    --radius: 18px;
+    --radius-sm: 12px;
+    --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="dark"] {
+    --bg: #1D1420;
+    --card-bg: #2A1D2A;
+    --sidebar-bg: #251A26;
+    --text-primary: #F6EBF3;
+    --text-secondary: #D3AECB;
+    --text-muted: #9A7E96;
+    --border: #3B2A3A;
+    --pink-tint: #402234;
+    --gold-tint: #3D3220;
+    --success-tint: #16342A;
+    --danger-tint: #402234;
+    --shadow-sm: 0 2px 10px rgba(0,0,0,0.25);
+    --shadow-md: 0 8px 28px rgba(0,0,0,0.35);
+    --shadow-lg: 0 22px 55px rgba(0,0,0,0.5);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    transition: background var(--transition), color var(--transition);
+    -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, .brand, .stat-number, .num-display { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
-    <!-- Leaflet CSS + JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+/* ---------- HEADER ---------- */
+.site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 200;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.logo-mark { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
+.logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+.logo-text .brand { font-size: 22px; font-weight: 700; color: var(--plum-dark); line-height: 1.1; letter-spacing: -0.5px; }
+.logo-text .tagline { font-size: 10.5px; letter-spacing: 1.6px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+.header-nav { display: flex; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 4px; }
+.header-nav button {
+    padding: 9px 18px; border-radius: 999px; font-size: 13.5px; font-weight: 600;
+    color: var(--text-secondary); transition: all var(--transition); white-space: nowrap;
+}
+.header-nav button:hover { color: var(--plum-dark); }
+.header-nav button.active { background: var(--plum); color: #fff; box-shadow: var(--shadow-sm); }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.icon-btn {
+    width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--card-bg); display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); transition: all var(--transition); font-size: 15px;
+}
+.icon-btn:hover { background: var(--pink-tint); color: var(--pink); border-color: var(--pink-soft); }
+.user-chip { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); }
+.user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--plum); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+.user-meta .u-name { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.user-meta .u-role { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-    <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+/* ---------- LAYOUT ---------- */
+.app-body { display: grid; grid-template-columns: 1fr 380px; gap: 24px; padding: 28px 32px 40px; max-width: 1500px; margin: 0 auto; align-items: start; }
+.tab-content { display: none; flex-direction: column; gap: 22px; }
+.tab-content.active { display: flex; }
+.side-column { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 92px; }
 
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+/* ---------- GREETING ---------- */
+.greeting-block .eyebrow { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 700; letter-spacing: 1.6px; color: var(--pink); text-transform: uppercase; margin-bottom: 10px; }
+.greeting-block .eyebrow .rule { width: 22px; height: 2px; background: var(--pink); border-radius: 2px; }
+.greeting-block h1 { font-size: 32px; font-weight: 700; color: var(--text-primary); line-height: 1.2; letter-spacing: -0.5px; }
+.greeting-block h1 .accent { color: var(--pink); }
+.greeting-block .sub { margin-top: 8px; font-size: 14.5px; color: var(--text-secondary); }
+.live-pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; padding: 7px 14px; border-radius: 999px; background: var(--success-tint); color: var(--success); font-size: 12.5px; font-weight: 600; }
+.live-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 3px rgba(31,157,90,0.18); animation: pulse 2s infinite; }
+.live-pill .sep { color: var(--text-muted); font-weight: 400; }
+@keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:0.4 } }
 
-    <style>
-        /* =============================================
-           1. ROOT VARIABLES
-           ============================================= */
-        :root {
-            --rose: #F9EFF2;
-            --rose-dark: #F5D6E0;
-            --mauve: #C9A7EB;
-            --mauve-dark: #B388E0;
-            --plum: #4A235A;
-            --plum-light: #6C3483;
-            --gold: #D4AF37;
-            --gold-light: #E8C95A;
-            --white: #FFFFFF;
-            --bg: #FCF8FA;
-            --card-bg: #FFFFFF;
-            --text-primary: #2C1A3A;
-            --text-secondary: #6C4A7A;
-            --text-muted: #A88B9A;
-            --border: #F0E6EA;
-            --shadow: 0 8px 32px rgba(74, 35, 90, 0.10);
-            --shadow-hover: 0 12px 40px rgba(74, 35, 90, 0.18);
-            --radius: 16px;
-            --radius-sm: 10px;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --header-bg: rgba(255, 255, 255, 0.92);
-            --green: #22C55E;
-            --green-bg: #E6F7E6;
-            --yellow: #D4AF37;
-            --yellow-bg: #FCF3E0;
-            --red: #D32F2F;
-            --red-bg: #FDE8E8;
-            --earnings-color: #B388E0;
-        }
+/* ---------- STAT CARDS ---------- */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-sm); transition: transform var(--transition), box-shadow var(--transition); }
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-card .sc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.stat-card .sc-label { font-size: 11px; font-weight: 700; letter-spacing: 1.1px; color: var(--text-muted); text-transform: uppercase; }
+.stat-card .sc-icon { width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.stat-card .sc-icon.plum { background: var(--pink-tint); color: var(--pink); }
+.stat-card .sc-icon.gold { background: var(--gold-tint); color: var(--gold-text); }
+.stat-card .sc-icon.success { background: var(--success-tint); color: var(--success); }
+.stat-card .sc-icon.info { background: rgba(89,45,85,0.08); color: var(--plum); }
+.stat-card .sc-number { font-size: 30px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; }
+.stat-card .sc-foot { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
 
-        [data-theme="dark"] {
-            --bg: #1A0F22;
-            --card-bg: #2C1A3A;
-            --header-bg: rgba(26, 15, 34, 0.95);
-            --text-primary: #F5EAF8;
-            --text-secondary: #D4B8D9;
-            --text-muted: #9A7A9F;
-            --border: #3D2A4A;
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
-            --rose: #2C1A3A;
-            --rose-dark: #3D2A4A;
-            --green-bg: #1A3A2A;
-            --yellow-bg: #3D3A1A;
-            --red-bg: #3D1A1A;
-        }
+/* ---------- PANEL / CARD ---------- */
+.panel { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow-sm); }
+.panel-row { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: stretch; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.panel-head h3 { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.panel-head h3 i { color: var(--pink); font-size: 13px; }
+.panel-head .p-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+.panel-link { font-size: 12.5px; font-weight: 700; color: var(--pink); display: flex; align-items: center; gap: 5px; transition: opacity var(--transition); }
+.panel-link:hover { opacity: 0.7; }
 
-        /* =============================================
-           2. RESET & BASE
-           ============================================= */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* ---------- CHART ---------- */
+.chart-wrap { margin-top: 14px; }
+.chart-wrap svg { width: 100%; height: 150px; display: block; overflow: visible; }
+.chart-legend { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--text-muted); }
+.chart-legend span { display: flex; align-items: center; gap: 6px; }
+.chart-legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+.chart-days { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-muted); font-weight: 600; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-            transition: background var(--transition), color var(--transition);
-        }
+/* ---------- ATTENTION LIST ---------- */
+.attn-list { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.attn-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: var(--radius-sm); background: var(--bg); transition: background var(--transition); }
+.attn-item:hover { background: var(--pink-tint); }
+.attn-ico { width: 34px; height: 34px; min-width: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.attn-ico.gold { background: var(--gold-tint); color: var(--gold-text); }
+.attn-ico.danger { background: var(--danger-tint); color: var(--danger); }
+.attn-ico.success { background: var(--success-tint); color: var(--success); }
+.attn-text { flex: 1; min-width: 0; }
+.attn-text .at-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); }
+.attn-text .at-desc { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+.attn-text .at-desc b { color: var(--text-secondary); font-weight: 600; }
+.attn-action { padding: 6px 13px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; transition: opacity var(--transition); }
+.attn-action:hover { opacity: 0.75; }
+.attn-action.gold { background: var(--gold-tint); color: var(--gold-text); }
+.attn-action.danger { background: var(--danger-tint); color: var(--danger); }
+.attn-action.success { background: var(--success-tint); color: var(--success); }
 
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--rose);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--mauve);
-            border-radius: 10px;
-        }
+/* ---------- MAP CARD ---------- */
+.map-card { padding: 0; overflow: hidden; }
+.map-card .panel-head { padding: 20px 22px 14px; margin: 0; }
+.map-tag { position: absolute; top: 14px; left: 14px; z-index: 400; background: var(--card-bg); padding: 9px 14px; border-radius: 12px; box-shadow: var(--shadow-md); font-size: 12.5px; }
+.map-tag b { display: block; font-size: 13.5px; }
+.map-tag span { color: var(--text-muted); font-size: 11px; }
+.map-refresh { position: absolute; top: 14px; right: 14px; z-index: 400; width: 34px; height: 34px; border-radius: 10px; background: var(--card-bg); box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: center; color: var(--pink); transition: transform var(--transition); }
+.map-refresh:hover { transform: rotate(90deg); }
+#ownerMap { height: 260px; width: 100%; position: relative; z-index: 1; }
+.map-legend { display: flex; gap: 14px; padding: 12px 22px; font-size: 11.5px; color: var(--text-muted); border-top: 1px solid var(--border); }
+.map-legend span { display: flex; align-items: center; gap: 5px; }
+.map-legend .dot { width: 7px; height: 7px; border-radius: 50%; }
 
-        /* =============================================
-           3. HEADER WITH NAVIGATION TABS
-           ============================================= */
-        .site-header {
-            background: var(--header-bg);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            padding: 10px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-            z-index: 30;
-            transition: background var(--transition), border-color var(--transition);
-            flex-wrap: wrap;
-            gap: 8px;
-        }
+/* ---------- BANNER ---------- */
+.support-banner { background: var(--plum); border-radius: var(--radius); padding: 22px 24px; color: #fff; position: relative; overflow: hidden; }
+.support-banner::after { content: ''; position: absolute; width: 160px; height: 160px; background: radial-gradient(circle, rgba(238,61,130,0.35), transparent 70%); top: -60px; right: -50px; }
+.support-banner .sb-icon { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 16px; }
+.support-banner h4 { font-size: 15.5px; font-weight: 700; margin-bottom: 6px; }
+.support-banner p { font-size: 12.5px; color: rgba(255,255,255,0.75); line-height: 1.5; margin-bottom: 14px; }
+.support-banner .sb-link { font-size: 13px; font-weight: 700; color: var(--gold); display: flex; align-items: center; gap: 6px; transition: gap var(--transition); }
+.support-banner .sb-link:hover { gap: 10px; }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+/* ---------- FLEET TAB ---------- */
+.fleet-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.search-box { flex: 1; min-width: 200px; display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; }
+.search-box i { color: var(--text-muted); font-size: 13px; }
+.search-box input { border: none; background: none; outline: none; font-size: 13.5px; color: var(--text-primary); width: 100%; font-family: inherit; }
+.search-box input::placeholder { color: var(--text-muted); }
+.pill-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill-filter { padding: 9px 15px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: 1px solid var(--border); color: var(--text-secondary); background: var(--card-bg); transition: all var(--transition); white-space: nowrap; }
+.pill-filter:hover { border-color: var(--pink-soft); }
+.pill-filter.active { background: var(--plum); color: #fff; border-color: var(--plum); }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-        .logo-mark {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 18px;
-            letter-spacing: -0.5px;
-            position: relative;
-            overflow: hidden;
-        }
-        .logo-mark::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            width: 30px;
-            height: 30px;
-            background: var(--gold);
-            opacity: 0.3;
-            border-radius: 50%;
-        }
-        .logo-mark span {
-            position: relative;
-            z-index: 2;
-        }
-        .logo-text .brand {
-            font-weight: 800;
-            font-size: 20px;
-            color: var(--plum);
-            letter-spacing: -0.3px;
-        }
-        .logo-text .brand .mauve {
-            color: var(--mauve-dark);
-        }
-        .logo-text .tagline {
-            font-size: 10px;
-            font-weight: 500;
-            color: var(--text-muted);
-            letter-spacing: 0.3px;
-        }
+.fleet-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; max-height: 560px; overflow-y: auto; padding-right: 4px; }
+.fleet-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg); cursor: pointer; transition: all var(--transition); }
+.fleet-row:hover { border-color: var(--pink-soft); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.fleet-row .fr-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 12px; background: var(--pink-tint); color: var(--pink); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.fleet-row .fr-info { flex: 1; min-width: 0; }
+.fleet-row .fr-info .fr-id { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.fleet-row .fr-info .fr-id span { font-weight: 500; color: var(--text-muted); }
+.fleet-row .fr-info .fr-loc { font-size: 12px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fleet-row .fr-right { display: flex; align-items: center; gap: 14px; }
+.fleet-row .fr-batt { font-size: 13px; font-weight: 700; color: var(--text-secondary); min-width: 40px; text-align: right; }
+.status-badge { padding: 5px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.status-badge.on_trip { background: var(--success-tint); color: var(--success); }
+.status-badge.ready { background: var(--success-tint); color: var(--success); }
+.status-badge.needs_care { background: var(--danger-tint); color: var(--danger); }
+.status-badge.charging { background: var(--gold-tint); color: var(--gold-text); }
+.empty-state { text-align: center; padding: 40px 0; color: var(--text-muted); }
+.empty-state i { font-size: 26px; margin-bottom: 10px; display: block; }
 
-        /* Navigation Tabs */
-        .header-nav {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--rose);
-            padding: 4px;
-            border-radius: 30px;
-            border: 1px solid var(--border);
-        }
-        .header-nav a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 6px 16px;
-            border-radius: 30px;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-        .header-nav a i {
-            font-size: 14px;
-        }
-        .header-nav a:hover {
-            color: var(--plum);
-            background: rgba(74, 35, 90, 0.05);
-        }
-        .header-nav a.active {
-            background: var(--plum);
-            color: white;
-            box-shadow: 0 4px 12px rgba(74, 35, 90, 0.25);
-        }
-        .header-nav a.active i {
-            color: white;
-        }
+.help-panel { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--border); }
+.help-panel .hp-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--pink-tint); color: var(--pink); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.help-panel .hp-text { flex: 1; }
+.help-panel .hp-text .hp-title { font-size: 13.5px; font-weight: 700; }
+.help-panel .hp-text .hp-desc { font-size: 12px; color: var(--text-muted); }
+.repair-list { display: none; flex-direction: column; gap: 8px; margin-top: 12px; }
+.repair-list.open { display: flex; }
+.repair-item { padding: 12px 14px; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--border); font-size: 12.5px; }
+.repair-item .ri-name { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+.repair-item .ri-meta { color: var(--text-muted); }
+.repair-item .ri-meta i { width: 14px; color: var(--pink); }
 
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .header-actions button {
-            background: var(--rose);
-            border: 1px solid var(--border);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            cursor: pointer;
-            font-size: 14px;
-            color: var(--text-secondary);
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .header-actions button:hover {
-            background: var(--plum);
-            color: white;
-            border-color: var(--plum);
-            transform: scale(1.05);
-        }
+/* ---------- FINANCIAL / REPORTS TAB ---------- */
+.fin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 16px; }
+.fin-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.fin-card .fc-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--pink-tint); color: var(--pink); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.fin-card .fc-value { font-size: 24px; font-weight: 700; }
+.fin-card .fc-label { font-size: 12px; color: var(--text-muted); }
+.report-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.btn-primary, .btn-secondary { padding: 13px; border-radius: 12px; font-size: 13.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all var(--transition); }
+.btn-primary { background: var(--plum); color: #fff; }
+.btn-primary:hover { background: var(--plum-light); }
+.btn-secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--pink-soft); color: var(--pink); }
+.info-note { margin-top: 14px; background: var(--pink-tint); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 12.5px; color: var(--text-secondary); display: flex; gap: 10px; align-items: flex-start; }
+.info-note i { color: var(--pink); margin-top: 1px; }
 
-        .user-badge {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 12px 5px 8px;
-            background: var(--rose);
-            border-radius: 30px;
-            border: 1px solid var(--border);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .user-badge:hover {
-            border-color: var(--mauve);
-            box-shadow: var(--shadow);
-        }
-        .user-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-        }
-        .user-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        .user-role {
-            font-size: 9px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
+/* ---------- SUPPORT TAB ---------- */
+.support-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 16px; }
+.support-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px; transition: all var(--transition); cursor: pointer; }
+.support-card:hover { border-color: var(--pink-soft); box-shadow: var(--shadow-sm); }
+.support-card .s-icon { width: 38px; height: 38px; border-radius: 11px; background: var(--pink-tint); color: var(--pink); display: flex; align-items: center; justify-content: center; font-size: 15px; margin-bottom: 12px; }
+.support-card .s-title { font-size: 14.5px; font-weight: 700; margin-bottom: 6px; }
+.support-card .s-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+.support-card .s-detail { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); font-size: 12.5px; color: var(--text-secondary); line-height: 1.7; }
+.support-card.open .s-detail { display: block; }
+.support-card .s-link { margin-top: 10px; font-size: 12.5px; font-weight: 700; color: var(--pink); display: inline-flex; align-items: center; gap: 5px; }
 
-        /* =============================================
-           4. MAIN LAYOUT
-           ============================================= */
-        .main-dashboard {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
+/* ---------- MODAL ---------- */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(43,32,48,0.55); backdrop-filter: blur(3px); z-index: 999; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal-content { background: var(--card-bg); border-radius: 22px; padding: 28px; width: 380px; max-width: 90vw; box-shadow: var(--shadow-lg); max-height: 86vh; overflow-y: auto; }
+.modal-content h2 { font-size: 19px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.modal-sub { font-size: 12.5px; color: var(--text-muted); margin: 6px 0 18px; display: flex; align-items: center; gap: 6px; }
+.driver-profile { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--radius-sm); background: var(--bg); margin-bottom: 16px; }
+.driver-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--plum); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; }
+.detail-row { display: flex; justify-content: space-between; padding: 10px 2px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.detail-row .label { color: var(--text-muted); }
+.detail-row .value { font-weight: 700; }
+.modal-close { width: 100%; margin-top: 18px; padding: 13px; border-radius: 12px; background: var(--plum); color: #fff; font-weight: 700; font-size: 13.5px; }
+.modal-close:hover { background: var(--plum-light); }
 
-        .dashboard-panel {
-            width: 480px;
-            min-width: 480px;
-            background: var(--bg);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            padding: 16px 20px 20px 20px;
-            transition: background var(--transition);
-            border-right: 1px solid var(--border);
-        }
-
-        .panel-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-
-        /* =============================================
-           5. TAB CONTENT (Show/Hide via JS)
-           ============================================= */
-        .tab-content {
-            display: none;
-            flex-direction: column;
-            gap: 14px;
-            height: 100%;
-        }
-        .tab-content.active {
-            display: flex;
-        }
-
-        /* =============================================
-           6. SECTION HEADERS
-           ============================================= */
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.2px;
-            margin-bottom: 2px;
-        }
-        .section-header i {
-            color: var(--mauve-dark);
-            font-size: 16px;
-        }
-        .section-divider {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 2px 0 8px 0;
-        }
-
-        /* =============================================
-           7. STATS CARDS
-           ============================================= */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 10px 4px;
-            text-align: center;
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-        }
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-        .stat-card .stat-number {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--plum);
-            line-height: 1.2;
-        }
-        .stat-card .stat-number.green {
-            color: var(--green);
-        }
-        .stat-card .stat-number.yellow {
-            color: var(--gold);
-        }
-        .stat-card .stat-number.red {
-            color: var(--red);
-        }
-        .stat-card .stat-number.earnings {
-            color: var(--earnings-color);
-        }
-        .stat-card .stat-label {
-            font-size: 8px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            font-weight: 600;
-            letter-spacing: 0.4px;
-            margin-top: 2px;
-        }
-        .stat-card .stat-icon {
-            font-size: 14px;
-            color: var(--mauve-dark);
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        /* =============================================
-           8. BATTERY & PERFORMANCE
-           ============================================= */
-        .battery-performance-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-        }
-        .bp-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 10px 4px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-        .bp-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-        .bp-card .bp-icon {
-            font-size: 18px;
-            color: var(--mauve-dark);
-            display: block;
-            margin-bottom: 2px;
-        }
-        .bp-card .bp-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-        .bp-card .bp-value.green {
-            color: var(--green);
-        }
-        .bp-card .bp-value.yellow {
-            color: var(--gold);
-        }
-        .bp-card .bp-value.red {
-            color: var(--red);
-        }
-        .bp-card .bp-label {
-            font-size: 8px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            margin-top: 2px;
-        }
-
-        /* =============================================
-           9. FINANCIAL SUMMARY
-           ============================================= */
-        .financial-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        .fin-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-        .fin-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-        .fin-card .fin-icon {
-            font-size: 24px;
-            color: var(--gold);
-            width: 40px;
-            text-align: center;
-        }
-        .fin-card .fin-info {
-            flex: 1;
-        }
-        .fin-card .fin-info .fin-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--plum);
-        }
-        .fin-card .fin-info .fin-value.earnings {
-            color: var(--earnings-color);
-        }
-        .fin-card .fin-info .fin-label {
-            font-size: 9px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-
-        /* =============================================
-           10. MANAGEMENT TOOLS
-           ============================================= */
-        .search-filter-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .search-box {
-            display: flex;
-            align-items: center;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 0 12px;
-            flex: 2;
-            min-width: 130px;
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-        }
-        .search-box:focus-within {
-            border-color: var(--mauve);
-            box-shadow: 0 0 0 3px rgba(201, 167, 235, 0.3);
-        }
-        .search-box i {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-        .search-box input {
-            background: transparent;
-            border: none;
-            padding: 8px 10px;
-            font-size: 12px;
-            width: 100%;
-            outline: none;
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-        }
-        .search-box input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .filter-buttons {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-            flex: 3;
-        }
-        .filter-btn {
-            padding: 5px 12px;
-            border: 1px solid var(--border);
-            border-radius: 30px;
-            background: var(--card-bg);
-            cursor: pointer;
-            font-size: 10px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            transition: var(--transition);
-            font-family: 'Inter', sans-serif;
-            box-shadow: var(--shadow);
-        }
-        .filter-btn:hover {
-            background: var(--rose);
-        }
-        .filter-btn.active {
-            background: var(--plum);
-            color: white;
-            border-color: var(--plum);
-        }
-        .filter-btn i {
-            margin-right: 4px;
-            font-size: 9px;
-        }
-
-        .management-actions {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 8px;
-        }
-        .export-btn {
-            padding: 10px;
-            border: none;
-            border-radius: var(--radius-sm);
-            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
-            color: white;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: var(--shadow);
-        }
-        .export-btn:hover {
-            transform: scale(1.02);
-            box-shadow: 0 6px 20px rgba(74, 35, 90, 0.3);
-        }
-        .repair-toggle {
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            background: var(--card-bg);
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: var(--shadow);
-        }
-        .repair-toggle:hover {
-            background: var(--plum);
-            color: white;
-            border-color: var(--plum);
-        }
-        .repair-toggle i {
-            color: var(--mauve-dark);
-        }
-        .repair-toggle:hover i {
-            color: white;
-        }
-
-        .repair-list {
-            display: none;
-            margin-top: 8px;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .repair-list.open {
-            display: flex;
-        }
-        .repair-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: var(--shadow);
-        }
-        .repair-card .r-icon {
-            font-size: 14px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .repair-card .r-info .r-name {
-            font-weight: 600;
-            font-size: 12px;
-            color: var(--text-primary);
-        }
-        .repair-card .r-info .r-addr {
-            font-size: 10px;
-            color: var(--text-muted);
-        }
-        .repair-card .r-info .r-phone {
-            font-size: 10px;
-            color: var(--mauve-dark);
-            font-weight: 500;
-        }
-
-        /* =============================================
-           11. SUPPORT TAB CONTENT
-           ============================================= */
-        .support-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .support-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-        .support-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-        .support-card .s-icon {
-            font-size: 32px;
-            color: var(--mauve-dark);
-            display: block;
-            margin-bottom: 8px;
-        }
-        .support-card .s-title {
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--text-primary);
-        }
-        .support-card .s-desc {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            line-height: 1.4;
-        }
-        .support-card .s-link {
-            display: inline-block;
-            margin-top: 8px;
-            color: var(--mauve-dark);
-            font-weight: 600;
-            font-size: 12px;
-            text-decoration: none;
-        }
-        .support-card .s-link:hover {
-            color: var(--plum);
-        }
-
-        /* =============================================
-           12. SCOOTER LIST
-           ============================================= */
-        #scooter-list {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 4px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-height: 120px;
-        }
-
-        .scooter-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 10px 14px;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-left: 4px solid var(--green);
-            box-shadow: var(--shadow);
-        }
-        .scooter-card:hover {
-            transform: translateX(4px);
-            box-shadow: var(--shadow-hover);
-        }
-        .scooter-card.status-green {
-            border-left-color: var(--green);
-        }
-        .scooter-card.status-yellow {
-            border-left-color: var(--gold);
-        }
-        .scooter-card.status-red {
-            border-left-color: var(--red);
-        }
-
-        .scooter-icon {
-            font-size: 18px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--rose);
-            color: var(--plum);
-            flex-shrink: 0;
-        }
-
-        .scooter-info {
-            flex: 1;
-            min-width: 0;
-        }
-        .scooter-info .id {
-            font-weight: 600;
-            font-size: 12px;
-            color: var(--text-primary);
-        }
-        .scooter-info .driver-name {
-            font-size: 10px;
-            color: var(--text-secondary);
-        }
-        .scooter-info .earnings-row {
-            font-size: 10px;
-            color: var(--earnings-color);
-            font-weight: 600;
-            display: flex;
-            gap: 10px;
-            margin-top: 1px;
-        }
-        .scooter-info .location {
-            font-size: 9px;
-            color: var(--text-muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .scooter-right {
-            text-align: right;
-            flex-shrink: 0;
-        }
-        .scooter-right .badge {
-            display: inline-block;
-            padding: 1px 8px;
-            border-radius: 12px;
-            font-size: 8px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .badge.green {
-            background: var(--green-bg);
-            color: var(--green);
-        }
-        .badge.yellow {
-            background: var(--yellow-bg);
-            color: var(--gold);
-        }
-        .badge.red {
-            background: var(--red-bg);
-            color: var(--red);
-        }
-        .battery-text {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-top: 1px;
-        }
-
-        /* =============================================
-           13. MAP
-           ============================================= */
-        #map {
-            flex: 1;
-            height: 100vh;
-            z-index: 10;
-            background: var(--bg);
-        }
-
-        /* =============================================
-           14. MODAL
-           ============================================= */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(44, 26, 58, 0.6);
-            backdrop-filter: blur(6px);
-            z-index: 999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s;
-        }
-        .modal-overlay.active {
-            display: flex;
-        }
-        .modal-content {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 24px;
-            max-width: 380px;
-            width: 90%;
-            box-shadow: 0 20px 50px rgba(44, 26, 58, 0.3);
-            border: 1px solid var(--border);
-        }
-        .modal-content h2 {
-            font-size: 18px;
-            color: var(--plum);
-            margin-bottom: 2px;
-        }
-        .modal-content .modal-sub {
-            color: var(--text-secondary);
-            font-size: 13px;
-            margin-bottom: 12px;
-        }
-        .driver-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--rose);
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 12px;
-        }
-        .driver-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 13px;
-        }
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-        .detail-row .label {
-            color: var(--text-muted);
-        }
-        .detail-row .value {
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-        .detail-row .value.earnings {
-            color: var(--earnings-color);
-            font-weight: 700;
-        }
-        .modal-close {
-            margin-top: 12px;
-            padding: 10px;
-            width: 100%;
-            border: none;
-            border-radius: var(--radius-sm);
-            background: var(--border);
-            color: var(--text-primary);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: 'Inter', sans-serif;
-        }
-        .modal-close:hover {
-            background: var(--red);
-            color: white;
-        }
-
-        /* =============================================
-           15. ANIMATIONS
-           ============================================= */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* =============================================
-           16. RESPONSIVE
-           ============================================= */
-        @media (max-width: 1024px) {
-            .dashboard-panel {
-                width: 400px;
-                min-width: 400px;
-                padding: 14px 16px;
-            }
-            .stats-row {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            .battery-performance-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .financial-grid {
-                grid-template-columns: 1fr;
-            }
-            .management-actions {
-                grid-template-columns: 1fr;
-            }
-            .support-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-            .site-header {
-                padding: 8px 14px;
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
-            }
-            .header-left {
-                justify-content: space-between;
-            }
-            .header-nav {
-                flex-wrap: wrap;
-                justify-content: center;
-                border-radius: 20px;
-                padding: 4px 6px;
-                gap: 4px;
-            }
-            .header-nav a {
-                font-size: 11px;
-                padding: 4px 12px;
-            }
-            .header-nav a i {
-                font-size: 12px;
-            }
-            .dashboard-panel {
-                width: 100%;
-                min-width: unset;
-                height: 50vh;
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-                padding: 10px 12px;
-            }
-            #map {
-                height: 50vh;
-            }
-            .stats-row {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            .battery-performance-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .search-filter-row {
-                flex-direction: column;
-            }
-            .filter-buttons {
-                flex-wrap: wrap;
-            }
-            .financial-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .support-grid {
-                grid-template-columns: 1fr;
-            }
-            .header-actions {
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .logo-text .brand {
-                font-size: 16px;
-            }
-            .logo-mark {
-                width: 30px;
-                height: 30px;
-                font-size: 14px;
-            }
-            .user-name {
-                font-size: 10px;
-            }
-            .stats-row {
-                grid-template-columns: 1fr 1fr;
-            }
-            .stat-card .stat-number {
-                font-size: 15px;
-            }
-            .battery-performance-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .bp-card .bp-value {
-                font-size: 15px;
-            }
-            .financial-grid {
-                grid-template-columns: 1fr;
-            }
-            .modal-content {
-                padding: 16px;
-            }
-            .management-actions {
-                grid-template-columns: 1fr;
-            }
-            .header-nav a {
-                font-size: 10px;
-                padding: 4px 8px;
-            }
-        }
-    </style>
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 1180px) {
+    .app-body { grid-template-columns: 1fr; }
+    .side-column { position: static; }
+    .panel-row { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px) {
+    .site-header { flex-wrap: wrap; gap: 12px; padding: 14px 18px; }
+    .header-nav { order: 3; width: 100%; overflow-x: auto; }
+    .app-body { padding: 20px 18px 32px; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .fin-grid { grid-template-columns: repeat(2, 1fr); }
+    .support-grid { grid-template-columns: 1fr; }
+    .report-actions { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
 
-    <!-- ============================================= -->
-    <!-- HEADER WITH TABS -->
-    <!-- ============================================= -->
-    <header class="site-header">
-        <div class="header-left">
-            <a href="#" class="logo">
-                <div class="logo-mark"><span>R</span></div>
-                <div class="logo-text">
-                    <span class="brand">Rent<span class="mauve">Scoot</span></span>
-                    <div class="tagline">Empowering Women in Mobility</div>
-                </div>
-            </a>
-
-            <!-- Navigation Tabs -->
-            <nav class="header-nav">
-                <a href="#" class="active" data-tab="dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
-                <a href="#" data-tab="fleet"><i class="fas fa-map-marked-alt"></i> Fleet</a>
-                <a href="#" data-tab="reports"><i class="fas fa-chart-bar"></i> Reports</a>
-                <a href="#" data-tab="support"><i class="fas fa-headset"></i> Support</a>
-            </nav>
+<!-- ============================================= -->
+<!-- HEADER -->
+<!-- ============================================= -->
+<header class="site-header">
+    <div class="header-left">
+        <div class="logo-mark"><img src="data:image/png;base64,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" alt="her logo" /></div>
+        <div class="logo-text">
+            <div class="brand">her</div>
+            <div class="tagline">Fleet Operations, Made Human</div>
         </div>
-
-        <div class="header-actions">
-            <button id="themeToggle" title="Toggle Theme"><i class="fas fa-moon"></i></button>
-            <button id="refreshBtn" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
-            <div class="user-badge">
-                <div class="user-avatar">F</div>
-                <div>
-                    <div class="user-name">Fatma</div>
-                    <div class="user-role">Owner</div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- ============================================= -->
-    <!-- MAIN DASHBOARD -->
-    <!-- ============================================= -->
-    <div class="main-dashboard">
-
-        <!-- LEFT PANEL -->
-        <div class="dashboard-panel">
-            <div class="panel-scroll">
-
-                <!-- ============================================= -->
-                <!-- TAB 1: DASHBOARD (Full Overview) -->
-                <!-- ============================================= -->
-                <div id="tab-dashboard" class="tab-content active">
-
-                    <!-- Fleet Overview -->
-                    <div>
-                        <div class="section-header"><i class="fas fa-motorcycle"></i> Fleet Overview</div>
-                        <hr class="section-divider" />
-                        <div class="stats-row">
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-motorcycle"></i></span>
-                                <div class="stat-number" id="totalCount">0</div>
-                                <div class="stat-label">Total</div>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-check-circle"></i></span>
-                                <div class="stat-number green" id="greenCount">0</div>
-                                <div class="stat-label">Healthy</div>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-triangle-exclamation"></i></span>
-                                <div class="stat-number yellow" id="yellowCount">0</div>
-                                <div class="stat-label">Low Battery</div>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-circle-exclamation"></i></span>
-                                <div class="stat-number red" id="redCount">0</div>
-                                <div class="stat-label">Service</div>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-coins"></i></span>
-                                <div class="stat-number earnings" id="totalEarnings">0.0</div>
-                                <div class="stat-label">Earnings (TND)</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Battery & Performance -->
-                    <div>
-                        <div class="section-header"><i class="fas fa-bolt"></i> Battery & Performance</div>
-                        <hr class="section-divider" />
-                        <div class="battery-performance-grid">
-                            <div class="bp-card">
-                                <span class="bp-icon"><i class="fas fa-bolt"></i></span>
-                                <div class="bp-value" id="avgBattery">92%</div>
-                                <div class="bp-label">Avg Battery</div>
-                            </div>
-                            <div class="bp-card">
-                                <span class="bp-icon"><i class="fas fa-thermometer-half"></i></span>
-                                <div class="bp-value" id="avgTemp">32°C</div>
-                                <div class="bp-label">Avg Temp</div>
-                            </div>
-                            <div class="bp-card">
-                                <span class="bp-icon"><i class="fas fa-road"></i></span>
-                                <div class="bp-value green" id="totalKm">0</div>
-                                <div class="bp-label">Total KM</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Financial Summary -->
-                    <div>
-                        <div class="section-header"><i class="fas fa-coins"></i> Financial Summary</div>
-                        <hr class="section-divider" />
-                        <div class="financial-grid">
-                            <div class="fin-card">
-                                <div class="fin-icon"><i class="fas fa-coins"></i></div>
-                                <div class="fin-info">
-                                    <div class="fin-value earnings" id="todayEarnings">0.0</div>
-                                    <div class="fin-label">Today's Earnings (TND)</div>
-                                </div>
-                            </div>
-                            <div class="fin-card">
-                                <div class="fin-icon"><i class="fas fa-route"></i></div>
-                                <div class="fin-info">
-                                    <div class="fin-value" id="todayKm">0.0</div>
-                                    <div class="fin-label">Total KM Today</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Management Tools -->
-                    <div>
-                        <div class="section-header"><i class="fas fa-tools"></i> Management Tools</div>
-                        <hr class="section-divider" />
-                        <div class="search-filter-row">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" id="searchInput" placeholder="Search by ID..." />
-                            </div>
-                            <div class="filter-buttons">
-                                <button class="filter-btn active" data-filter="all"><i class="fas fa-list"></i> All</button>
-                                <button class="filter-btn" data-filter="green"><i class="fas fa-check-circle"></i> Healthy</button>
-                                <button class="filter-btn" data-filter="yellow"><i class="fas fa-triangle-exclamation"></i> Low</button>
-                                <button class="filter-btn" data-filter="red"><i class="fas fa-circle-exclamation"></i> Service</button>
-                            </div>
-                        </div>
-                        <div class="management-actions">
-                            <button class="export-btn" id="exportBtn"><i class="fas fa-file-pdf"></i> Export Report</button>
-                            <button class="repair-toggle" id="repairToggleBtn"><i class="fas fa-tools"></i> Repair Services</button>
-                        </div>
-                        <div class="repair-list" id="repairList"></div>
-                    </div>
-
-                    <!-- Fleet List -->
-                    <div>
-                        <div class="section-header"><i class="fas fa-list"></i> Fleet List</div>
-                        <hr class="section-divider" />
-                        <div id="scooter-list"></div>
-                    </div>
-                </div>
-
-                <!-- ============================================= -->
-                <!-- TAB 2: FLEET (Focus on Assets) -->
-                <!-- ============================================= -->
-                <div id="tab-fleet" class="tab-content">
-                    <div>
-                        <div class="section-header"><i class="fas fa-motorcycle"></i> Fleet Overview</div>
-                        <hr class="section-divider" />
-                        <div class="stats-row">
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-motorcycle"></i></span>
-                                <div class="stat-number" id="fleetTotal">0</div>
-                                <div class="stat-label">Total</div>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-check-circle"></i></span>
-                                <div class="stat-number green" id="fleetGreen">0</div>
-                                <div class="stat-label">Healthy</div>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-triangle-exclamation"></i></span>
-                                <div class="stat-number yellow" id="fleetYellow">0</div>
-                                <div class="stat-label">Low Battery</div>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-circle-exclamation"></i></span>
-                                <div class="stat-number red" id="fleetRed">0</div>
-                                <div class="stat-label">Service</div>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-icon"><i class="fas fa-coins"></i></span>
-                                <div class="stat-number earnings" id="fleetEarnings">0.0</div>
-                                <div class="stat-label">Earnings (TND)</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="section-header"><i class="fas fa-tools"></i> Manage Fleet</div>
-                        <hr class="section-divider" />
-                        <div class="search-filter-row">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" id="fleetSearchInput" placeholder="Search by ID..." />
-                            </div>
-                            <div class="filter-buttons">
-                                <button class="filter-btn active" data-filter="all" id="fleetFilterAll"><i class="fas fa-list"></i> All</button>
-                                <button class="filter-btn" data-filter="green" id="fleetFilterGreen"><i class="fas fa-check-circle"></i> Healthy</button>
-                                <button class="filter-btn" data-filter="yellow" id="fleetFilterYellow"><i class="fas fa-triangle-exclamation"></i> Low</button>
-                                <button class="filter-btn" data-filter="red" id="fleetFilterRed"><i class="fas fa-circle-exclamation"></i> Service</button>
-                            </div>
-                        </div>
-                        <div id="fleet-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:120px;"></div>
-                    </div>
-                </div>
-
-                <!-- ============================================= -->
-                <!-- TAB 3: REPORTS (Focus on Financials) -->
-                <!-- ============================================= -->
-                <div id="tab-reports" class="tab-content">
-                    <div>
-                        <div class="section-header"><i class="fas fa-chart-bar"></i> Financial Reports</div>
-                        <hr class="section-divider" />
-                        <div class="financial-grid">
-                            <div class="fin-card">
-                                <div class="fin-icon"><i class="fas fa-coins"></i></div>
-                                <div class="fin-info">
-                                    <div class="fin-value earnings" id="reportEarnings">0.0</div>
-                                    <div class="fin-label">Total Earnings (TND)</div>
-                                </div>
-                            </div>
-                            <div class="fin-card">
-                                <div class="fin-icon"><i class="fas fa-route"></i></div>
-                                <div class="fin-info">
-                                    <div class="fin-value" id="reportKm">0.0</div>
-                                    <div class="fin-label">Total KM Driven</div>
-                                </div>
-                            </div>
-                            <div class="fin-card">
-                                <div class="fin-icon"><i class="fas fa-motorcycle"></i></div>
-                                <div class="fin-info">
-                                    <div class="fin-value" id="reportFleetSize">0</div>
-                                    <div class="fin-label">Fleet Size</div>
-                                </div>
-                            </div>
-                            <div class="fin-card">
-                                <div class="fin-icon"><i class="fas fa-bolt"></i></div>
-                                <div class="fin-info">
-                                    <div class="fin-value" id="reportAvgBattery">0%</div>
-                                    <div class="fin-label">Average Battery</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="section-header"><i class="fas fa-file-pdf"></i> Export & Insights</div>
-                        <hr class="section-divider" />
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                            <button class="export-btn" id="reportExportBtn" style="padding:14px;font-size:14px;"><i class="fas fa-file-pdf"></i> Export Full Report</button>
-                            <button class="repair-toggle" id="reportRefreshBtn" style="padding:14px;font-size:14px;" onclick="location.reload();"><i class="fas fa-sync-alt"></i> Refresh Data</button>
-                        </div>
-                        <div style="margin-top:10px;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;box-shadow:var(--shadow);text-align:center;color:var(--text-muted);font-size:13px;">
-                            <i class="fas fa-info-circle" style="color:var(--mauve-dark);margin-right:6px;"></i> 
-                            Reports are generated based on real-time fleet data. Use this for bank loan applications and business planning.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ============================================= -->
-                <!-- TAB 4: SUPPORT (Help & Contact) -->
-                <!-- ============================================= -->
-                <div id="tab-support" class="tab-content">
-                    <div>
-                        <div class="section-header"><i class="fas fa-headset"></i> Support Center</div>
-                        <hr class="section-divider" />
-                        <div class="support-grid">
-                            <div class="support-card">
-                                <span class="s-icon"><i class="fas fa-question-circle"></i></span>
-                                <div class="s-title">FAQ</div>
-                                <div class="s-desc">Find answers to the most common questions about managing your fleet.</div>
-                                <a href="#" class="s-link" onclick="alert('📖 FAQ Section\n\n1. How do I add a new scooter?\n2. How to assign a driver?\n3. How to generate a report?\n4. How to handle a low battery alert?');">Browse FAQs →</a>
-                            </div>
-                            <div class="support-card">
-                                <span class="s-icon"><i class="fas fa-envelope"></i></span>
-                                <div class="s-title">Contact Us</div>
-                                <div class="s-desc">Get in touch with our support team for personalized assistance.</div>
-                                <a href="#" class="s-link" onclick="alert('📧 Support\n\nEmail: support@rentscoot.tn\nPhone: +216 70 123 456\nHours: Mon-Fri 9:00 - 18:00');">Email Support →</a>
-                            </div>
-                            <div class="support-card">
-                                <span class="s-icon"><i class="fas fa-file-alt"></i></span>
-                                <div class="s-title">Documentation</div>
-                                <div class="s-desc">Read the full user guide and technical documentation for RentScoot.</div>
-                                <a href="#" class="s-link" onclick="alert('📄 Documentation\n\nFull user guide available for download.\nCovers: Dashboard, Fleet Management, Reports, and Safety Features.');">View Docs →</a>
-                            </div>
-                            <div class="support-card">
-                                <span class="s-icon"><i class="fas fa-phone"></i></span>
-                                <div class="s-title">Emergency Support</div>
-                                <div class="s-desc">24/7 emergency support for urgent fleet issues or rider safety concerns.</div>
-                                <a href="#" class="s-link" onclick="alert('🆘 Emergency Support\n\nCall: +216 80 123 456\nSMS: +216 55 123 456\nAlways available for urgent issues.');">Call Now →</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- RIGHT PANEL: MAP -->
-        <div id="map"></div>
-
     </div>
+    <nav class="header-nav">
+        <button class="active" data-tab="dashboard"><i class="fas fa-house" style="margin-right:6px;"></i>Dashboard</button>
+        <button data-tab="fleet"><i class="fas fa-motorcycle" style="margin-right:6px;"></i>Fleet</button>
+        <button data-tab="reports"><i class="fas fa-chart-line" style="margin-right:6px;"></i>Reports</button>
+        <button data-tab="support"><i class="fas fa-headset" style="margin-right:6px;"></i>Support</button>
+    </nav>
+    <div class="header-right">
+        <button class="icon-btn" id="themeToggle" title="Toggle theme"><i class="fas fa-sun"></i></button>
+        <button class="icon-btn" id="aiToggle" title="Insights"><i class="fas fa-wand-magic-sparkles"></i></button>
+        <div class="user-chip">
+            <div class="user-avatar">HM</div>
+            <div class="user-meta">
+                <div class="u-name">Hela Mansour</div>
+                <div class="u-role">Fleet Owner</div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="app-body">
 
     <!-- ============================================= -->
-    <!-- MODAL -->
+    <!-- TAB: DASHBOARD -->
     <!-- ============================================= -->
-    <div class="modal-overlay" id="modal">
-        <div class="modal-content">
-            <h2 id="modalTitle"><i class="fas fa-motorcycle" style="color: var(--mauve-dark);"></i> S-1024</h2>
-            <div class="modal-sub" id="modalSub"><i class="fas fa-location-dot" style="color: var(--text-muted);"></i> Ave Habib Bourguiba</div>
-            <div class="driver-profile">
-                <div class="driver-avatar" id="driverAvatar">F</div>
-                <div>
-                    <div style="font-weight:600;font-size:15px;color:var(--text-primary);" id="driverName">Fatma Ben Ali</div>
-                    <div style="font-size:12px;color:var(--text-secondary);" id="driverPhone"><i class="fas fa-phone"></i> +216 98 765 432</div>
-                    <div style="font-size:12px;color:var(--gold);" id="driverRating"><i class="fas fa-star"></i> 4.8</div>
+    <div id="tab-dashboard" class="tab-content active">
+
+        <div class="greeting-block">
+            <div class="eyebrow"><span class="rule"></span>TUESDAY · <span id="todayDate"></span></div>
+            <h1 id="greetingText">Good morning, Hela.</h1>
+            <h1>Here is your fleet <span class="accent">at a glance.</span></h1>
+            <div class="sub">The important bits are clear. Your team can keep moving.</div>
+            <div class="live-pill"><span class="dot"></span>Live across Tunis <span class="sep">·</span> updated <span id="liveClock">--:--:--</span></div>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="sc-top"><span class="sc-label">Fleet</span><span class="sc-icon plum"><i class="fas fa-motorcycle"></i></span></div>
+                <div class="sc-number" id="statFleet">0</div>
+                <div class="sc-foot">vehicles active</div>
+            </div>
+            <div class="stat-card">
+                <div class="sc-top"><span class="sc-label">Moving</span><span class="sc-icon success"><i class="fas fa-location-arrow"></i></span></div>
+                <div class="sc-number" id="statMoving">0</div>
+                <div class="sc-foot">on a trip now</div>
+            </div>
+            <div class="stat-card">
+                <div class="sc-top"><span class="sc-label">Attention</span><span class="sc-icon gold"><i class="fas fa-triangle-exclamation"></i></span></div>
+                <div class="sc-number" id="statAttention">0</div>
+                <div class="sc-foot">need a look today</div>
+            </div>
+            <div class="stat-card">
+                <div class="sc-top"><span class="sc-label">Today</span><span class="sc-icon info"><i class="fas fa-arrow-trend-up"></i></span></div>
+                <div class="sc-number" id="statToday">0.00</div>
+                <div class="sc-foot">TND collected</div>
+            </div>
+        </div>
+
+        <div class="panel-row">
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h3><i class="fas fa-chart-line"></i>Today's rhythm</h3>
+                        <div class="p-sub">Trips and earnings · last 7 days</div>
+                    </div>
+                    <a class="panel-link" id="exportLink"><i class="fas fa-download"></i>Export report</a>
+                </div>
+                <div class="chart-wrap"><svg id="rhythmChart" viewBox="0 0 560 150" preserveAspectRatio="none"></svg></div>
+                <div class="chart-days" id="chartDays"></div>
+                <div class="chart-legend">
+                    <span><i class="dot" style="background:var(--pink)"></i>Earnings</span>
+                    <span id="weekTripsLabel"><i class="dot" style="background:var(--gold)"></i>0 trips this week</span>
                 </div>
             </div>
-            <div class="detail-row"><span class="label">Battery</span><span class="value" id="modalBattery">87%</span></div>
-            <div class="detail-row"><span class="label">Status</span><span class="value" id="modalStatus">Healthy</span></div>
-            <div class="detail-row"><span class="label">Distance Today</span><span class="value" id="modalKm">12.4 km</span></div>
-            <div class="detail-row"><span class="label">Earnings Today</span><span class="value earnings" id="modalEarnings">18.6 TND</span></div>
-            <div class="detail-row"><span class="label">Shift Start</span><span class="value" id="modalShift">08:30 AM</span></div>
-            <div class="detail-row"><span class="label">Battery Temp</span><span class="value" id="modalTemp">32°C</span></div>
-            <div class="detail-row"><span class="label">Trips Today</span><span class="value" id="modalTrips">12</span></div>
-            <button class="modal-close" id="modalClose"><i class="fas fa-times"></i> Close</button>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h3><i class="fas fa-sparkles"></i>Worth your attention</h3>
+                        <div class="p-sub" id="attentionSub">Two small things, no drama</div>
+                    </div>
+                </div>
+                <div class="attn-list" id="attentionList"></div>
+            </div>
         </div>
     </div>
 
     <!-- ============================================= -->
-    <!-- JAVASCRIPT -->
+    <!-- TAB: FLEET -->
     <!-- ============================================= -->
-    <script>
-        // =============================================
-        // CONFIGURATION
-        // =============================================
-        const EARNINGS_PER_KM = 1.5;
+    <div id="tab-fleet" class="tab-content">
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h3><i class="fas fa-motorcycle"></i>Your fleet</h3>
+                    <div class="p-sub" id="fleetCountLabel">0 of 0 vehicles shown</div>
+                </div>
+                <a class="panel-link" id="fleetRefresh"><i class="fas fa-arrows-rotate"></i>Refresh</a>
+            </div>
+            <div class="fleet-toolbar">
+                <div class="search-box"><i class="fas fa-magnifying-glass"></i><input type="text" id="fleetSearch" placeholder="Search vehicle, rider, place" /></div>
+            </div>
+            <div class="pill-filters" style="margin-top:12px;">
+                <button class="pill-filter active" data-filter="all">All</button>
+                <button class="pill-filter" data-filter="on_trip">On trip</button>
+                <button class="pill-filter" data-filter="ready">Ready</button>
+                <button class="pill-filter" data-filter="needs_care">Needs care</button>
+                <button class="pill-filter" data-filter="charging">Charging</button>
+            </div>
+            <div class="fleet-list" id="fleetList"></div>
+        </div>
 
-        // =============================================
-        // MOCK DATA
-        // =============================================
-        const scooterData = [{
-            id: 'S-1024',
-            lat: 36.8065,
-            lng: 10.1815,
-            battery: 87,
-            status: 'green',
-            location: 'Ave Habib Bourguiba',
-            temp: 32,
-            trips: 12,
-            kmDriven: 12.4,
-            driver: { name: 'Fatma Ben Ali', phone: '+216 98 765 432', rating: 4.8, shift: '08:30 AM', avatar: 'F' }
-        }, {
-            id: 'S-1025',
-            lat: 36.8120,
-            lng: 10.1750,
-            battery: 23,
-            status: 'yellow',
-            location: 'Rue de Marseille',
-            temp: 38,
-            trips: 8,
-            kmDriven: 8.2,
-            driver: { name: 'Mohamed Karray', phone: '+216 55 123 456', rating: 4.2, shift: '09:00 AM', avatar: 'M' }
-        }, {
-            id: 'S-1026',
-            lat: 36.7980,
-            lng: 10.1880,
-            battery: 5,
-            status: 'red',
-            location: 'Medina Parking Garage',
-            temp: 45,
-            trips: 3,
-            kmDriven: 3.0,
-            driver: { name: 'Sara Bouazizi', phone: '+216 22 334 455', rating: 3.9, shift: '07:45 AM', avatar: 'S' }
-        }, {
-            id: 'S-1027',
-            lat: 36.8200,
-            lng: 10.1650,
-            battery: 92,
-            status: 'green',
-            location: 'La Goulette',
-            temp: 29,
-            trips: 18,
-            kmDriven: 22.7,
-            driver: { name: 'Ahmed Dhahbi', phone: '+216 99 887 766', rating: 4.9, shift: '08:00 AM', avatar: 'A' }
-        }, {
-            id: 'S-1028',
-            lat: 36.7850,
-            lng: 10.1950,
-            battery: 15,
-            status: 'yellow',
-            location: 'El Menzah',
-            temp: 40,
-            trips: 5,
-            kmDriven: 5.9,
-            driver: { name: 'Nour Jebali', phone: '+216 33 456 789', rating: 4.0, shift: '10:00 AM', avatar: 'N' }
-        }, {
-            id: 'S-1029',
-            lat: 36.8300,
-            lng: 10.1500,
-            battery: 78,
-            status: 'green',
-            location: 'Ave de la République',
-            temp: 31,
-            trips: 14,
-            kmDriven: 15.3,
-            driver: { name: 'Amira Gharbi', phone: '+216 77 888 999', rating: 4.7, shift: '08:15 AM', avatar: 'A' }
-        }, {
-            id: 'S-1030',
-            lat: 36.8000,
-            lng: 10.2100,
-            battery: 42,
-            status: 'green',
-            location: 'Berges du Lac',
-            temp: 33,
-            trips: 9,
-            kmDriven: 10.1,
-            driver: { name: 'Youssef Miled', phone: '+216 11 222 333', rating: 4.5, shift: '09:30 AM', avatar: 'Y' }
-        }, {
-            id: 'S-1031',
-            lat: 36.8150,
-            lng: 10.1850,
-            battery: 8,
-            status: 'red',
-            location: 'Bab El Bhar',
-            temp: 43,
-            trips: 2,
-            kmDriven: 1.8,
-            driver: { name: 'Hela Mansour', phone: '+216 44 555 666', rating: 4.1, shift: '06:30 AM', avatar: 'H' }
-        }, {
-            id: 'S-1032',
-            lat: 36.7900,
-            lng: 10.1700,
-            battery: 65,
-            status: 'green',
-            location: 'Cité Ennasr',
-            temp: 30,
-            trips: 11,
-            kmDriven: 14.6,
-            driver: { name: 'Karim Ben Amor', phone: '+216 66 777 888', rating: 4.3, shift: '08:45 AM', avatar: 'K' }
-        }, {
-            id: 'S-1033',
-            lat: 36.8350,
-            lng: 10.1450,
-            battery: 95,
-            status: 'green',
-            location: 'Ariana',
-            temp: 27,
-            trips: 22,
-            kmDriven: 28.4,
-            driver: { name: 'Lamia Fekih', phone: '+216 88 999 000', rating: 4.9, shift: '07:00 AM', avatar: 'L' }
-        }, ];
+        <div class="panel">
+            <div class="help-panel">
+                <div class="hp-icon"><i class="fas fa-wrench"></i></div>
+                <div class="hp-text">
+                    <div class="hp-title">Help nearby</div>
+                    <div class="hp-desc">A trusted hand when your fleet needs one</div>
+                </div>
+                <button class="panel-link" id="repairToggle">See repair partners <i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div class="repair-list" id="repairList"></div>
+        </div>
+    </div>
 
-        const repairShops = [{
-            name: 'El Manar Batteries',
-            address: '15 Rue du Koweït, Tunis 1002',
-            phone: '+216 71 234 567'
-        }, {
-            name: 'ScootFix Tunis',
-            address: 'Avenue Habib Bourguiba, Tunis 1001',
-            phone: '+216 29 876 543'
-        }, {
-            name: 'Mobility Care Center',
-            address: 'Cité Ennasr, Ariana 2080',
-            phone: '+216 55 667 889'
-        }, ];
+    <!-- ============================================= -->
+    <!-- TAB: REPORTS -->
+    <!-- ============================================= -->
+    <div id="tab-reports" class="tab-content">
+        <div class="panel">
+            <div class="panel-head"><div><h3><i class="fas fa-chart-bar"></i>Financial reports</h3><div class="p-sub">Everything you need for planning and loan applications</div></div></div>
+            <div class="fin-grid">
+                <div class="fin-card"><div class="fc-icon"><i class="fas fa-coins"></i></div><div class="fc-value" id="repEarnings">0.0</div><div class="fc-label">Total earnings (TND)</div></div>
+                <div class="fin-card"><div class="fc-icon"><i class="fas fa-route"></i></div><div class="fc-value" id="repKm">0.0</div><div class="fc-label">Total km driven</div></div>
+                <div class="fin-card"><div class="fc-icon"><i class="fas fa-motorcycle"></i></div><div class="fc-value" id="repFleetSize">0</div><div class="fc-label">Fleet size</div></div>
+                <div class="fin-card"><div class="fc-icon"><i class="fas fa-bolt"></i></div><div class="fc-value" id="repAvgBattery">0%</div><div class="fc-label">Average battery</div></div>
+            </div>
+            <div class="report-actions">
+                <button class="btn-primary" id="reportExportBtn"><i class="fas fa-file-arrow-down"></i>Export full report</button>
+                <button class="btn-secondary" id="reportRefreshBtn"><i class="fas fa-arrows-rotate"></i>Refresh data</button>
+            </div>
+            <div class="info-note"><i class="fas fa-circle-info"></i>Reports are generated from real-time fleet data — handy for bank loan applications and business planning.</div>
+        </div>
+    </div>
 
-        let scooters = JSON.parse(JSON.stringify(scooterData));
-        let markers = [];
-        let repairOpen = false;
+    <!-- ============================================= -->
+    <!-- TAB: SUPPORT -->
+    <!-- ============================================= -->
+    <div id="tab-support" class="tab-content">
+        <div class="panel">
+            <div class="panel-head"><div><h3><i class="fas fa-headset"></i>Support center</h3><div class="p-sub">We're one tap away, every day</div></div></div>
+            <div class="support-grid">
+                <div class="support-card">
+                    <div class="s-icon"><i class="fas fa-circle-question"></i></div>
+                    <div class="s-title">FAQ</div>
+                    <div class="s-desc">Find answers to the most common questions about managing your fleet.</div>
+                    <div class="s-detail">1. How do I add a new scooter?<br>2. How do I assign a rider?<br>3. How do I generate a report?<br>4. What do I do about a low-battery alert?</div>
+                    <div class="s-link">Browse FAQs <i class="fas fa-arrow-right"></i></div>
+                </div>
+                <div class="support-card">
+                    <div class="s-icon"><i class="fas fa-envelope"></i></div>
+                    <div class="s-title">Contact us</div>
+                    <div class="s-desc">Get in touch with our support team for personalised assistance.</div>
+                    <div class="s-detail">Email: support@her.tn<br>Phone: +216 70 123 456<br>Hours: Mon–Fri, 9:00–18:00</div>
+                    <div class="s-link">Email support <i class="fas fa-arrow-right"></i></div>
+                </div>
+                <div class="support-card">
+                    <div class="s-icon"><i class="fas fa-file-lines"></i></div>
+                    <div class="s-title">Documentation</div>
+                    <div class="s-desc">Read the full user guide and technical documentation for her.</div>
+                    <div class="s-detail">Covers: Dashboard, Fleet Management, Reports, and Safety Features. Full guide available for download.</div>
+                    <div class="s-link">View docs <i class="fas fa-arrow-right"></i></div>
+                </div>
+                <div class="support-card">
+                    <div class="s-icon"><i class="fas fa-phone"></i></div>
+                    <div class="s-title">Emergency support</div>
+                    <div class="s-desc">24/7 emergency support for urgent fleet issues or rider safety concerns.</div>
+                    <div class="s-detail">Call: +216 80 123 456<br>SMS: +216 55 123 456<br>Always available for urgent issues.</div>
+                    <div class="s-link">Call now <i class="fas fa-arrow-right"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // =============================================
-        // MAP
-        // =============================================
-        const map = L.map('map', { zoomControl: true, fadeAnimation: true }).setView([36.8065, 10.1815], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap',
-            maxZoom: 19,
-        }).addTo(map);
+    <!-- ============================================= -->
+    <!-- RIGHT: STICKY SIDE COLUMN -->
+    <!-- ============================================= -->
+    <div class="side-column">
+        <div class="panel map-card">
+            <div class="panel-head" style="padding-bottom:10px;">
+                <div><h3><i class="fas fa-location-dot"></i>Where everyone is</h3><div class="p-sub">A live, gentle overview of the city</div></div>
+            </div>
+            <div style="position:relative;">
+                <div class="map-tag"><b>Tunis, Tunisia</b><span id="mapVehicleCount">0 vehicles · live coverage</span></div>
+                <button class="map-refresh" id="mapRefreshBtn"><i class="fas fa-arrows-rotate"></i></button>
+                <div id="ownerMap"></div>
+            </div>
+            <div class="map-legend">
+                <span><i class="dot" style="background:var(--success)"></i>On trip</span>
+                <span><i class="dot" style="background:var(--gold)"></i>Charging</span>
+                <span><i class="dot" style="background:var(--danger)"></i>Needs care</span>
+            </div>
+        </div>
 
-        // =============================================
-        // HELPERS
-        // =============================================
-        function getStatusLabel(status) {
-            return { green: 'Healthy', yellow: 'Low Battery', red: 'Needs Service' } [status] || status;
+        <div class="support-banner">
+            <div class="sb-icon"><i class="fas fa-headset"></i></div>
+            <h4>Need a second pair of eyes?</h4>
+            <p>Our support team knows your fleet. They're one tap away, every day.</p>
+            <a class="sb-link" id="talkToSupport">Talk to support <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+
+</div>
+
+<!-- ============================================= -->
+<!-- MODAL -->
+<!-- ============================================= -->
+<div class="modal-overlay" id="modal">
+    <div class="modal-content">
+        <h2><i class="fas fa-motorcycle" style="color:var(--pink);"></i><span id="modalTitle">HER-001</span></h2>
+        <div class="modal-sub"><i class="fas fa-location-dot"></i><span id="modalLoc">Location</span></div>
+        <div class="driver-profile">
+            <div class="driver-avatar" id="driverAvatar">F</div>
+            <div>
+                <div style="font-weight:700;font-size:14.5px;" id="driverName">Rider name</div>
+                <div style="font-size:12px;color:var(--text-muted);" id="driverPhone"><i class="fas fa-phone"></i></div>
+                <div style="font-size:12px;color:var(--gold-text);font-weight:600;" id="driverRating"><i class="fas fa-star"></i></div>
+            </div>
+        </div>
+        <div class="detail-row"><span class="label">Battery</span><span class="value" id="modalBattery">–</span></div>
+        <div class="detail-row"><span class="label">Status</span><span class="value" id="modalStatus">–</span></div>
+        <div class="detail-row"><span class="label">Distance today</span><span class="value" id="modalKm">–</span></div>
+        <div class="detail-row"><span class="label">Earnings today</span><span class="value" id="modalEarnings">–</span></div>
+        <div class="detail-row"><span class="label">Shift start</span><span class="value" id="modalShift">–</span></div>
+        <div class="detail-row"><span class="label">Battery temp</span><span class="value" id="modalTemp">–</span></div>
+        <div class="detail-row"><span class="label">Trips today</span><span class="value" id="modalTrips">–</span></div>
+        <button class="modal-close" id="modalClose">Close</button>
+    </div>
+</div>
+
+<script>
+// =============================================
+// CONFIG
+// =============================================
+const EARNINGS_PER_KM = 1.5;
+
+// =============================================
+// MOCK DATA
+// =============================================
+const scooterData = [
+    { id:'HER-001', lat:36.8065, lng:10.1815, battery:87, state:'ready', location:'Ave Habib Bourguiba', temp:32, trips:12, kmDriven:12.4, driver:{name:'Fatma Ben Ali', phone:'+216 98 765 432', rating:4.8, shift:'08:30 AM', avatar:'F'} },
+    { id:'HER-002', lat:36.8120, lng:10.1750, battery:23, state:'charging', location:'Rue de Marseille', temp:38, trips:8, kmDriven:8.2, driver:{name:'Mohamed Karray', phone:'+216 55 123 456', rating:4.2, shift:'09:00 AM', avatar:'M'} },
+    { id:'HER-003', lat:36.7980, lng:10.1880, battery:5, state:'needs_care', location:'Medina Parking Garage', temp:45, trips:3, kmDriven:3.0, driver:{name:'Sara Bouazizi', phone:'+216 22 334 455', rating:3.9, shift:'07:45 AM', avatar:'S'} },
+    { id:'HER-004', lat:36.8200, lng:10.1650, battery:92, state:'on_trip', location:'La Goulette', temp:29, trips:18, kmDriven:22.7, driver:{name:'Ahmed Dhahbi', phone:'+216 99 887 766', rating:4.9, shift:'08:00 AM', avatar:'A'} },
+    { id:'HER-005', lat:36.7850, lng:10.1950, battery:15, state:'charging', location:'El Menzah', temp:40, trips:5, kmDriven:5.9, driver:{name:'Nour Jebali', phone:'+216 33 456 789', rating:4.0, shift:'10:00 AM', avatar:'N'} },
+    { id:'HER-006', lat:36.8300, lng:10.1500, battery:78, state:'on_trip', location:'Ave de la République', temp:31, trips:14, kmDriven:15.3, driver:{name:'Amira Gharbi', phone:'+216 77 888 999', rating:4.7, shift:'08:15 AM', avatar:'A'} },
+    { id:'HER-007', lat:36.8000, lng:10.2100, battery:42, state:'ready', location:'Berges du Lac', temp:33, trips:9, kmDriven:10.1, driver:{name:'Youssef Miled', phone:'+216 11 222 333', rating:4.5, shift:'09:30 AM', avatar:'Y'} },
+    { id:'HER-008', lat:36.8150, lng:10.1850, battery:8, state:'needs_care', location:'Bab El Bhar', temp:43, trips:2, kmDriven:1.8, driver:{name:'Ines Mansour', phone:'+216 44 555 666', rating:4.1, shift:'06:30 AM', avatar:'I'} },
+    { id:'HER-009', lat:36.7900, lng:10.1700, battery:65, state:'ready', location:'Cité Ennasr', temp:30, trips:11, kmDriven:14.6, driver:{name:'Karim Ben Amor', phone:'+216 66 777 888', rating:4.3, shift:'08:45 AM', avatar:'K'} },
+    { id:'HER-010', lat:36.8350, lng:10.1450, battery:95, state:'on_trip', location:'Ariana', temp:27, trips:22, kmDriven:28.4, driver:{name:'Lamia Fekih', phone:'+216 88 999 000', rating:4.9, shift:'07:00 AM', avatar:'L'} }
+];
+
+const repairShops = [
+    { name:'El Manar Batteries', address:'15 Rue du Koweït, Tunis 1002', phone:'+216 71 234 567' },
+    { name:'ScootFix Tunis', address:'Avenue Habib Bourguiba, Tunis 1001', phone:'+216 29 876 543' },
+    { name:'Mobility Care Center', address:'Cité Ennasr, Ariana 2080', phone:'+216 55 667 889' }
+];
+
+const STATUS_LABEL = { on_trip:'On trip', ready:'Ready', needs_care:'Needs care', charging:'Charging' };
+const STATUS_DOT = { on_trip:'var(--success)', ready:'var(--success)', needs_care:'var(--danger)', charging:'var(--gold)' };
+
+let scooters = JSON.parse(JSON.stringify(scooterData));
+let repairOpen = false;
+let currentFilter = 'all';
+let currentSearch = '';
+
+function calcEarnings(km) { return Math.round(km * EARNINGS_PER_KM * 10) / 10; }
+
+// =============================================
+// GREETING + CLOCK
+// =============================================
+function updateGreeting() {
+    const now = new Date();
+    const hour = now.getHours();
+    const part = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+    document.getElementById('greetingText').innerHTML = `Good ${part}, Hela.`;
+    document.getElementById('todayDate').textContent = now.toLocaleDateString('en-US', { day:'2-digit', month:'short', year:'numeric' }).toUpperCase();
+    document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-GB');
+}
+updateGreeting();
+setInterval(updateGreeting, 1000);
+
+// =============================================
+// STATS
+// =============================================
+function renderStats() {
+    const moving = scooters.filter(s => s.state === 'on_trip').length;
+    const attention = scooters.filter(s => s.state === 'needs_care' || s.battery < 25).length;
+    const totalEarnings = scooters.reduce((sum, s) => sum + calcEarnings(s.kmDriven), 0);
+    document.getElementById('statFleet').textContent = scooters.length;
+    document.getElementById('statMoving').textContent = moving;
+    document.getElementById('statAttention').textContent = attention;
+    document.getElementById('statToday').textContent = totalEarnings.toFixed(2);
+    document.getElementById('mapVehicleCount').textContent = `${scooters.length} vehicles · live coverage`;
+
+    document.getElementById('repEarnings').textContent = totalEarnings.toFixed(1);
+    document.getElementById('repKm').textContent = scooters.reduce((s,v)=>s+v.kmDriven,0).toFixed(1);
+    document.getElementById('repFleetSize').textContent = scooters.length;
+    document.getElementById('repAvgBattery').textContent = Math.round(scooters.reduce((s,v)=>s+v.battery,0)/scooters.length) + '%';
+}
+
+// =============================================
+// ATTENTION LIST
+// =============================================
+function renderAttention() {
+    const list = document.getElementById('attentionList');
+    const low = scooters.filter(s => s.battery < 25).sort((a,b)=>a.battery-b.battery);
+    const warm = scooters.filter(s => s.temp >= 40);
+    const items = [];
+
+    if (low.length) {
+        const s = low[0];
+        items.push(`<div class="attn-item"><div class="attn-ico gold"><i class="fas fa-bolt"></i></div>
+            <div class="attn-text"><div class="at-title">${s.id} is getting low</div>
+            <div class="at-desc"><b>${s.battery}% battery</b> · charging suggested</div></div>
+            <button class="attn-action gold" onclick="openModal('${s.id}')">Check</button></div>`);
+    }
+    if (warm.length) {
+        const s = warm[0];
+        items.push(`<div class="attn-item"><div class="attn-ico danger"><i class="fas fa-temperature-three-quarters"></i></div>
+            <div class="attn-text"><div class="at-title">${s.id} ran warm</div>
+            <div class="at-desc"><b>${s.temp}°C</b> after ${s.trips} trips today</div></div>
+            <button class="attn-action danger" onclick="openModal('${s.id}')">Review</button></div>`);
+    }
+    const readyCount = scooters.filter(s => s.state === 'ready').length;
+    items.push(`<div class="attn-item"><div class="attn-ico success"><i class="fas fa-shield-heart"></i></div>
+        <div class="attn-text"><div class="at-title">Everything else is steady</div>
+        <div class="at-desc"><b>${readyCount} scooters</b> ready to go</div></div>
+        <span class="attn-action success">Good</span></div>`);
+
+    list.innerHTML = items.join('');
+    document.getElementById('attentionSub').textContent = `${items.length - 1} small thing${items.length-1===1?'':'s'}, no drama`;
+}
+
+// =============================================
+// RHYTHM CHART (SVG sparkline)
+// =============================================
+function renderChart() {
+    const days = [];
+    const dayLabels = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(now); d.setDate(now.getDate() - i);
+        dayLabels.push(d.toLocaleDateString('en-US', { weekday:'short' }));
+    }
+    // deterministic pseudo-random weekly trend, seeded by fleet totals for a "live" feel
+    const baseEarnings = scooters.reduce((s,v)=>s+calcEarnings(v.kmDriven),0);
+    const seed = [0.52,0.61,0.58,0.7,0.66,0.82,1];
+    const values = seed.map(f => Math.max(20, baseEarnings * f * (0.85 + Math.random()*0.05)));
+    const tripsThisWeek = Math.round(scooters.reduce((s,v)=>s+v.trips,0) * 6.2);
+
+    const w = 560, h = 150, pad = 8;
+    const max = Math.max(...values), min = Math.min(...values);
+    const pts = values.map((v,i) => {
+        const x = pad + (i/(values.length-1)) * (w - pad*2);
+        const y = h - pad - ((v - min) / (max - min || 1)) * (h - pad*2 - 20) - 10;
+        return [x,y];
+    });
+
+    function smoothPath(points) {
+        let d = `M ${points[0][0]},${points[0][1]}`;
+        for (let i = 0; i < points.length - 1; i++) {
+            const [x0,y0] = points[i], [x1,y1] = points[i+1];
+            const mx = (x0+x1)/2;
+            d += ` C ${mx},${y0} ${mx},${y1} ${x1},${y1}`;
         }
+        return d;
+    }
+    const linePath = smoothPath(pts);
+    const areaPath = linePath + ` L ${pts[pts.length-1][0]},${h} L ${pts[0][0]},${h} Z`;
 
-        function calcEarnings(km) {
-            return Math.round(km * EARNINGS_PER_KM * 10) / 10;
-        }
+    const svg = document.getElementById('rhythmChart');
+    svg.innerHTML = `
+        <defs>
+            <linearGradient id="rhythmFade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--pink)" stop-opacity="0.28"/>
+                <stop offset="100%" stop-color="var(--pink)" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
+        <path d="${areaPath}" fill="url(#rhythmFade)" stroke="none"/>
+        <path d="${linePath}" fill="none" stroke="var(--pink)" stroke-width="3" stroke-linecap="round"/>
+        ${pts.map((p,i)=> i===pts.length-1 ? `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--pink)" stroke="var(--card-bg)" stroke-width="2"/>` : '').join('')}
+    `;
+    document.getElementById('chartDays').innerHTML = dayLabels.map(d=>`<span>${d}</span>`).join('');
+    document.getElementById('weekTripsLabel').innerHTML = `<i class="dot" style="background:var(--gold)"></i>${tripsThisWeek} trips this week`;
+}
 
-        function renderFleetList(containerId, filter = 'all', search = '') {
-            const container = document.getElementById(containerId);
-            const filtered = scooters.filter(s => {
-                const matchFilter = filter === 'all' || s.status === filter;
-                const matchSearch = s.id.toLowerCase().includes(search.toLowerCase());
-                return matchFilter && matchSearch;
-            });
+// =============================================
+// FLEET LIST
+// =============================================
+function renderFleetList() {
+    const container = document.getElementById('fleetList');
+    const filtered = scooters.filter(s => {
+        const matchFilter = currentFilter === 'all' || s.state === currentFilter;
+        const q = currentSearch.toLowerCase();
+        const matchSearch = !q || s.id.toLowerCase().includes(q) || s.driver.name.toLowerCase().includes(q) || s.location.toLowerCase().includes(q);
+        return matchFilter && matchSearch;
+    });
+    document.getElementById('fleetCountLabel').textContent = `${filtered.length} of ${scooters.length} vehicles shown`;
 
-            if (filtered.length === 0) {
-                container.innerHTML =
-                    `<div style="text-align:center;padding:30px 0;color:var(--text-muted);font-size:13px;"><i class="fas fa-search" style="font-size:24px;display:block;margin-bottom:8px;"></i>No scooters found</div>`;
-                return;
-            }
+    if (!filtered.length) {
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-magnifying-glass"></i>No vehicles match that search</div>`;
+        return;
+    }
+    container.innerHTML = filtered.map(s => `
+        <div class="fleet-row" onclick="openModal('${s.id}')">
+            <div class="fr-icon"><i class="fas fa-motorcycle"></i></div>
+            <div class="fr-info">
+                <div class="fr-id">${s.id} <span>· ${s.driver.name}</span></div>
+                <div class="fr-loc">${s.location}</div>
+            </div>
+            <div class="fr-right">
+                <span class="fr-batt">${s.battery}%</span>
+                <span class="status-badge ${s.state}">${STATUS_LABEL[s.state]}</span>
+            </div>
+        </div>
+    `).join('');
+}
 
-            container.innerHTML = filtered.map(s => {
-                const earnings = calcEarnings(s.kmDriven);
-                return `
-                            <div class="scooter-card status-${s.status}" onclick="openModal('${s.id}')">
-                                <div class="scooter-icon"><i class="fas fa-motorcycle"></i></div>
-                                <div class="scooter-info">
-                                    <div class="id">${s.id}</div>
-                                    <div class="driver-name"><i class="fas fa-user"></i> ${s.driver.name}</div>
-                                    <div class="earnings-row">
-                                        <span><i class="fas fa-route"></i> ${s.kmDriven.toFixed(1)} km</span>
-                                        <span><i class="fas fa-coins"></i> ${earnings.toFixed(1)} TND</span>
-                                    </div>
-                                    <div class="location"><i class="fas fa-location-dot"></i> ${s.location}</div>
-                                </div>
-                                <div class="scooter-right">
-                                    <span class="badge ${s.status}">${getStatusLabel(s.status)}</span>
-                                    <div class="battery-text"><i class="fas fa-bolt"></i> ${s.battery}%</div>
-                                </div>
-                            </div>
-                        `;
-            }).join('');
-        }
+document.querySelectorAll('.pill-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.pill-filter').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderFleetList();
+    });
+});
+document.getElementById('fleetSearch').addEventListener('input', e => { currentSearch = e.target.value; renderFleetList(); });
+document.getElementById('fleetRefresh').addEventListener('click', () => { renderFleetList(); renderStats(); renderMap(); });
 
-        // =============================================
-        // RENDER ALL STATS
-        // =============================================
-        function renderAllStats() {
-            const total = scooters.length;
-            const green = scooters.filter(s => s.status === 'green').length;
-            const yellow = scooters.filter(s => s.status === 'yellow').length;
-            const red = scooters.filter(s => s.status === 'red').length;
-            const totalEarnings = scooters.reduce((sum, s) => sum + calcEarnings(s.kmDriven), 0);
-            const totalKm = scooters.reduce((sum, s) => sum + s.kmDriven, 0);
-            const avgBattery = Math.round(scooters.reduce((sum, s) => sum + s.battery, 0) / scooters.length);
-            const avgTemp = Math.round(scooters.reduce((sum, s) => sum + s.temp, 0) / scooters.length);
+// =============================================
+// REPAIR LIST
+// =============================================
+function renderRepairList() {
+    document.getElementById('repairList').innerHTML = repairShops.map(r => `
+        <div class="repair-item">
+            <div class="ri-name">${r.name}</div>
+            <div class="ri-meta"><i class="fas fa-location-dot"></i> ${r.address}</div>
+            <div class="ri-meta"><i class="fas fa-phone"></i> ${r.phone}</div>
+        </div>
+    `).join('');
+}
+document.getElementById('repairToggle').addEventListener('click', () => {
+    repairOpen = !repairOpen;
+    document.getElementById('repairList').classList.toggle('open', repairOpen);
+});
 
-            // Dashboard Tab Stats
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('greenCount').textContent = green;
-            document.getElementById('yellowCount').textContent = yellow;
-            document.getElementById('redCount').textContent = red;
-            document.getElementById('totalEarnings').textContent = totalEarnings.toFixed(1);
-            document.getElementById('avgBattery').textContent = `${avgBattery}%`;
-            document.getElementById('avgTemp').textContent = `${avgTemp}°C`;
-            document.getElementById('totalKm').textContent = totalKm.toFixed(1);
-            document.getElementById('todayEarnings').textContent = totalEarnings.toFixed(1);
-            document.getElementById('todayKm').textContent = totalKm.toFixed(1);
+// =============================================
+// SUPPORT CARDS (inline expand instead of alert)
+// =============================================
+document.querySelectorAll('.support-card').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('open'));
+});
+document.getElementById('talkToSupport').addEventListener('click', () => {
+    document.querySelector('[data-tab="support"]').click();
+});
 
-            // Fleet Tab Stats
-            document.getElementById('fleetTotal').textContent = total;
-            document.getElementById('fleetGreen').textContent = green;
-            document.getElementById('fleetYellow').textContent = yellow;
-            document.getElementById('fleetRed').textContent = red;
-            document.getElementById('fleetEarnings').textContent = totalEarnings.toFixed(1);
-
-            // Reports Tab Stats
-            document.getElementById('reportEarnings').textContent = totalEarnings.toFixed(1);
-            document.getElementById('reportKm').textContent = totalKm.toFixed(1);
-            document.getElementById('reportFleetSize').textContent = total;
-            document.getElementById('reportAvgBattery').textContent = `${avgBattery}%`;
-        }
-
-        // =============================================
-        // RENDER MAP
-        // =============================================
-        function renderMap(filter = 'all', search = '') {
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
-
-            const filtered = scooters.filter(s => {
-                const matchFilter = filter === 'all' || s.status === filter;
-                const matchSearch = s.id.toLowerCase().includes(search.toLowerCase());
-                return matchFilter && matchSearch;
-            });
-
-            filtered.forEach(s => {
-                const color = s.status === 'green' ? '#22C55E' : s.status === 'yellow' ? '#D4AF37' : '#D32F2F';
-                const marker = L.circleMarker([s.lat, s.lng], {
-                    radius: 16,
-                    fillColor: color,
-                    color: 'white',
-                    weight: 3,
-                    opacity: 1,
-                    fillOpacity: 0.85,
-                }).addTo(map);
-
-                const earnings = calcEarnings(s.kmDriven);
-                marker.bindPopup(`
-                            <b style="font-size:15px; color:#4A235A;">${s.id}</b><br>
-                            <span style="color:#6C4A7A;"><i class="fas fa-user"></i> ${s.driver.name}</span><br>
-                            <span style="color:#6C4A7A;"><i class="fas fa-bolt"></i> ${s.battery}% · ${getStatusLabel(s.status)}</span><br>
-                            <span style="color:#B388E0;"><i class="fas fa-coins"></i> ${earnings.toFixed(1)} TND</span><br>
-                            <span style="color:#A88B9A;font-size:11px;"><i class="fas fa-location-dot"></i> ${s.location}</span>
-                        `);
-
-                marker.on('click', () => {
-                    openModal(s.id);
-                    map.setView([s.lat, s.lng], 16, { animate: true });
-                });
-
-                markers.push(marker);
-            });
-
-            if (filtered.length === 1) {
-                map.setView([filtered[0].lat, filtered[0].lng], 15, { animate: true });
-            } else {
-                map.setView([36.8065, 10.1815], 13);
-            }
-        }
-
-        // =============================================
-        // RENDER REPAIR LIST
-        // =============================================
-        function renderRepairList() {
-            const list = document.getElementById('repairList');
-            list.innerHTML = repairShops.map(shop => `
-                        <div class="repair-card">
-                            <div class="r-icon"><i class="fas fa-bolt"></i></div>
-                            <div class="r-info">
-                                <div class="r-name">${shop.name}</div>
-                                <div class="r-addr"><i class="fas fa-location-dot" style="font-size:9px;"></i> ${shop.address}</div>
-                                <div class="r-phone"><i class="fas fa-phone"></i> ${shop.phone}</div>
-                            </div>
-                        </div>
-                    `).join('');
-        }
-
-        // =============================================
-        // FULL RENDER
-        // =============================================
-        function renderAll() {
-            renderAllStats();
-
-            // Dashboard tab list uses the main search/filter
-            const mainFilter = document.querySelector('#tab-dashboard .filter-btn.active');
-            const mainSearch = document.getElementById('searchInput');
-            const currentFilter = mainFilter ? mainFilter.dataset.filter : 'all';
-            const currentSearch = mainSearch ? mainSearch.value.trim() : '';
-            renderFleetList('scooter-list', currentFilter, currentSearch);
-
-            // Fleet tab list uses its own search/filter
-            const fleetFilter = document.querySelector('#tab-fleet .filter-btn.active');
-            const fleetSearch = document.getElementById('fleetSearchInput');
-            const fleetFilterVal = fleetFilter ? fleetFilter.dataset.filter : 'all';
-            const fleetSearchVal = fleetSearch ? fleetSearch.value.trim() : '';
-            renderFleetList('fleet-list', fleetFilterVal, fleetSearchVal);
-
-            renderMap(currentFilter, currentSearch);
-            renderRepairList();
-        }
-
-        // =============================================
-        // TAB SWITCHING
-        // =============================================
-        document.querySelectorAll('.header-nav a').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-
-                // Update active tab
-                document.querySelectorAll('.header-nav a').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-
-                // Show corresponding content
-                const tabId = link.dataset.tab;
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                document.getElementById(`tab-${tabId}`).classList.add('active');
-
-                // Re-render to ensure correct data is shown (especially for fleet list)
-                renderAll();
-            });
+// =============================================
+// MAP
+// =============================================
+let map, markers = [];
+function initMap() {
+    map = L.map('ownerMap', { zoomControl: false, attributionControl: false, scrollWheelZoom: false }).setView([36.808, 10.18], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    renderMap();
+}
+function renderMap() {
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+    scooters.forEach(s => {
+        const color = STATUS_DOT[s.state].replace('var(--success)','#1F9D5A').replace('var(--gold)','#F0B429').replace('var(--danger)','#D8527A');
+        const icon = L.divIcon({
+            className: '',
+            html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>`,
+            iconSize: [14,14], iconAnchor: [7,7]
         });
+        const marker = L.marker([s.lat, s.lng], { icon }).addTo(map).on('click', () => openModal(s.id));
+        markers.push(marker);
+    });
+}
+document.getElementById('mapRefreshBtn').addEventListener('click', renderMap);
 
-        // =============================================
-        // SEARCH & FILTER (Dashboard Tab)
-        // =============================================
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            renderAll();
-        });
+// =============================================
+// MODAL
+// =============================================
+function openModal(id) {
+    const s = scooters.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('modalTitle').textContent = s.id;
+    document.getElementById('modalLoc').textContent = s.location;
+    document.getElementById('driverAvatar').textContent = s.driver.avatar;
+    document.getElementById('driverName').textContent = s.driver.name;
+    document.getElementById('driverPhone').innerHTML = `<i class="fas fa-phone"></i> ${s.driver.phone}`;
+    document.getElementById('driverRating').innerHTML = `<i class="fas fa-star"></i> ${s.driver.rating}`;
+    document.getElementById('modalBattery').textContent = s.battery + '%';
+    document.getElementById('modalStatus').textContent = STATUS_LABEL[s.state];
+    document.getElementById('modalKm').textContent = s.kmDriven.toFixed(1) + ' km';
+    document.getElementById('modalEarnings').textContent = calcEarnings(s.kmDriven).toFixed(1) + ' TND';
+    document.getElementById('modalShift').textContent = s.driver.shift;
+    document.getElementById('modalTemp').textContent = s.temp + '°C';
+    document.getElementById('modalTrips').textContent = s.trips;
+    document.getElementById('modal').classList.add('open');
+}
+document.getElementById('modalClose').addEventListener('click', () => document.getElementById('modal').classList.remove('open'));
+document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') e.currentTarget.classList.remove('open'); });
 
-        document.querySelectorAll('#tab-dashboard .filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#tab-dashboard .filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderAll();
-            });
-        });
+// =============================================
+// TABS
+// =============================================
+document.querySelectorAll('.header-nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.header-nav button').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        setTimeout(() => map && map.invalidateSize(), 200);
+    });
+});
 
-        // =============================================
-        // SEARCH & FILTER (Fleet Tab)
-        // =============================================
-        document.getElementById('fleetSearchInput').addEventListener('input', (e) => {
-            renderAll();
-        });
+// =============================================
+// THEME TOGGLE
+// =============================================
+document.getElementById('themeToggle').addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('themeToggle').innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+});
 
-        document.querySelectorAll('#tab-fleet .filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('#tab-fleet .filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderAll();
-            });
-        });
+// =============================================
+// EXPORT
+// =============================================
+function exportReport() {
+    const totalEarnings = scooters.reduce((s,v)=>s+calcEarnings(v.kmDriven),0).toFixed(2);
+    const totalKm = scooters.reduce((s,v)=>s+v.kmDriven,0).toFixed(1);
+    const text = '✨ her — Fleet Report\\n\\n' +
+        `Fleet size: ${scooters.length}\\n` +
+        `Total earnings: ${totalEarnings} TND\\n` +
+        `Total distance: ${totalKm} km\\n` +
+        `Generated: ${new Date().toLocaleString()}`;
+    alert(text);
+}
+document.getElementById('exportLink').addEventListener('click', exportReport);
+document.getElementById('reportExportBtn').addEventListener('click', exportReport);
+document.getElementById('reportRefreshBtn').addEventListener('click', () => { renderStats(); renderFleetList(); renderMap(); });
+document.getElementById('aiToggle').addEventListener('click', () => alert('✨ Fleet Insights\\n\\nYour busiest hour today has been 5–7 PM.\\nHER-010 is your top earner this week.'));
 
-        // =============================================
-        // REPAIR TOGGLE
-        // =============================================
-        document.getElementById('repairToggleBtn').addEventListener('click', () => {
-            repairOpen = !repairOpen;
-            const list = document.getElementById('repairList');
-            const btn = document.getElementById('repairToggleBtn');
-            if (repairOpen) {
-                list.classList.add('open');
-                btn.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Services';
-            } else {
-                list.classList.remove('open');
-                btn.innerHTML = '<i class="fas fa-tools"></i> Repair Services';
-            }
-        });
-
-        // =============================================
-        // MODAL
-        // =============================================
-        function openModal(id) {
-            const s = scooters.find(s => s.id === id);
-            if (!s) return;
-
-            const earnings = calcEarnings(s.kmDriven);
-
-            document.getElementById('modalTitle').innerHTML =
-                `<i class="fas fa-motorcycle" style="color: var(--mauve-dark);"></i> ${s.id}`;
-            document.getElementById('modalSub').innerHTML = `<i class="fas fa-location-dot" style="color: var(--text-muted);"></i> ${s.location}`;
-            document.getElementById('modalBattery').textContent = `${s.battery}%`;
-            document.getElementById('modalStatus').textContent = getStatusLabel(s.status);
-            document.getElementById('modalStatus').style.color = s.status === 'green' ? '#22C55E' : s.status === 'yellow' ?
-                '#D4AF37' : '#D32F2F';
-            document.getElementById('modalKm').textContent = `${s.kmDriven.toFixed(1)} km`;
-            document.getElementById('modalEarnings').textContent = `${earnings.toFixed(1)} TND`;
-            document.getElementById('modalTemp').textContent = `${s.temp || 32}°C`;
-            document.getElementById('modalTrips').textContent = s.trips || 0;
-
-            const d = s.driver || { name: 'Unknown', phone: 'N/A', rating: 0, shift: 'N/A', avatar: '?' };
-            document.getElementById('driverName').textContent = d.name;
-            document.getElementById('driverPhone').innerHTML = `<i class="fas fa-phone"></i> ${d.phone}`;
-            document.getElementById('driverRating').innerHTML = `<i class="fas fa-star"></i> ${d.rating}`;
-            document.getElementById('driverAvatar').textContent = d.avatar || d.name.charAt(0);
-            document.getElementById('modalShift').textContent = d.shift || 'N/A';
-
-            document.getElementById('modal').classList.add('active');
-        }
-
-        document.getElementById('modalClose').addEventListener('click', () => {
-            document.getElementById('modal').classList.remove('active');
-        });
-        document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) document.getElementById('modal').classList.remove('active');
-        });
-
-        // =============================================
-        // EXPORT (Dashboard Tab)
-        // =============================================
-        document.getElementById('exportBtn').addEventListener('click', () => {
-            generateReport();
-        });
-
-        // =============================================
-        // EXPORT (Reports Tab)
-        // =============================================
-        document.getElementById('reportExportBtn').addEventListener('click', () => {
-            generateReport();
-        });
-
-        function generateReport() {
-            const btn = document.getElementById('exportBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-            btn.disabled = true;
-
-            setTimeout(() => {
-                const totalKm = scooters.reduce((sum, s) => sum + s.kmDriven, 0);
-                const totalEarnings = scooters.reduce((sum, s) => sum + calcEarnings(s.kmDriven), 0);
-                const activeDrivers = scooters.map(s => s.driver.name).join(', ');
-
-                alert(
-                    '✅ RentScoot Fleet Report\n\n' +
-                    `Total: ${scooters.length} | Healthy: ${scooters.filter(s=>s.status==='green').length} | Low: ${scooters.filter(s=>s.status==='yellow').length} | Service: ${scooters.filter(s=>s.status==='red').length}\n\n` +
-                    `💰 Total Earnings: ${totalEarnings.toFixed(1)} TND\n` +
-                    `📏 Total Distance: ${totalKm.toFixed(1)} km\n` +
-                    `📊 Avg per Scooter: ${(totalEarnings / scooters.length).toFixed(1)} TND\n\n` +
-                    `👤 Drivers: ${activeDrivers}`
-                );
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }, 1500);
-        }
-
-        // =============================================
-        // THEME
-        // =============================================
-        let dark = false;
-        document.getElementById('themeToggle').addEventListener('click', () => {
-            dark = !dark;
-            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-            document.getElementById('themeToggle').innerHTML = dark ? '<i class="fas fa-sun"></i>' :
-                '<i class="fas fa-moon"></i>';
-        });
-
-        // =============================================
-        // REFRESH
-        // =============================================
-        document.getElementById('refreshBtn').addEventListener('click', () => {
-            const btn = document.getElementById('refreshBtn');
-            btn.style.animation = 'spin 0.6s linear';
-            setTimeout(() => btn.style.animation = '', 600);
-
-            scooters.forEach(s => {
-                const drain = Math.random() * 3;
-                s.battery = Math.max(0, Math.round(s.battery - drain));
-                s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
-                const extraKm = Math.random() * 2;
-                s.kmDriven = Math.round((s.kmDriven + extraKm) * 10) / 10;
-                s.trips = (s.trips || 0) + Math.floor(Math.random() * 2);
-                s.temp = Math.min(50, Math.round(s.temp + (Math.random() * 2 - 1)));
-            });
-            renderAll();
-        });
-
-        // =============================================
-        // REAL-TIME SIMULATION
-        // =============================================
-        setInterval(() => {
-            scooters.forEach(s => {
-                const drain = (Math.random() * 1.2);
-                s.battery = Math.max(0, Math.round(s.battery - drain));
-                s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
-                const extraKm = (Math.random() * 1.8);
-                s.kmDriven = Math.round((s.kmDriven + extraKm) * 10) / 10;
-                s.trips = (s.trips || 0) + (Math.random() > 0.7 ? 1 : 0);
-                s.temp = Math.min(50, Math.round(s.temp + (Math.random() * 2 - 1)));
-            });
-            renderAll();
-        }, 15000);
-
-        // =============================================
-        // INIT
-        // =============================================
-        renderAll();
-    </script>
-
+// =============================================
+// INIT
+// =============================================
+renderStats();
+renderAttention();
+renderChart();
+renderFleetList();
+renderRepairList();
+initMap();
+</script>
 </body>
 </html>
