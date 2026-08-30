@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RentScoot · Rider Dashboard</title>
+
+    <!-- Leaflet CSS + JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f0f4f9;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-primary: #0b1e33;
+            --text-secondary: #3d5a78;
+            --text-muted: #7a8fa6;
+            --border: #e2e8f0;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --green: #22c55e;
+            --green-bg: #dcfce7;
+            --yellow: #f59e0b;
+            --yellow-bg: #fef3c7;
+            --red: #ef4444;
+            --red-bg: #fee2e2;
+            --blue: #2563eb;
+            --blue-bg: #dbeafe;
+            --gold: #f59e0b;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --sidebar-bg: #1e293b;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #334155;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 10px;
+        }
+
+        /* ===== SIDEBAR ===== */
+        #sidebar {
+            width: 380px;
+            min-width: 380px;
+            background: var(--sidebar-bg);
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.04);
+            z-index: 20;
+            transition: background var(--transition), width 0.3s;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .sidebar-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-header h1 span {
+            background: var(--blue);
+            color: white;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .header-actions button {
+            background: var(--border);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-actions button:hover {
+            background: var(--blue);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .subtitle i {
+            font-size: 10px;
+            color: var(--green);
+        }
+        #live-clock {
+            font-weight: 600;
+            color: var(--blue);
+            font-size: 13px;
+            margin-left: auto;
+        }
+
+        /* ===== RIDER CONTENT ===== */
+        #riderContent {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            padding-top: 4px;
+        }
+
+        .rider-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            margin-bottom: 12px;
+        }
+        .rider-card .scooter-id-big {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .rider-card .driver-name-big {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        /* Circular Battery Gauge */
+        .battery-gauge-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 8px 0;
+            position: relative;
+        }
+        .battery-gauge-svg {
+            width: 140px;
+            height: 140px;
+            transform: rotate(-90deg);
+        }
+        .battery-gauge-svg .bg {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 12;
+        }
+        .battery-gauge-svg .progress {
+            fill: none;
+            stroke: var(--green);
+            stroke-width: 12;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.8s ease, stroke 0.8s ease;
+        }
+        .battery-center-text {
+            position: absolute;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .battery-center-text .sub-text {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .rider-stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .rider-stat-item {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 12px 4px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .rider-stat-item .r-val {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .rider-stat-item .r-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .rider-stat-item .r-val.green {
+            color: var(--green);
+        }
+        .rider-stat-item .r-val.yellow {
+            color: var(--yellow);
+        }
+        .rider-stat-item .r-val.red {
+            color: var(--red);
+        }
+        .rider-stat-item .r-val.blue {
+            color: var(--blue);
+        }
+
+        .rider-location-box {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+        }
+        .rider-location-box i {
+            color: var(--blue);
+            font-size: 18px;
+        }
+
+        .rider-footer {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 11px;
+            margin-top: auto;
+            padding: 10px 0;
+        }
+
+        /* ===== MAP ===== */
+        #map {
+            flex: 1;
+            height: 100vh;
+            z-index: 10;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--sidebar-bg);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s;
+            border: 1px solid var(--border);
+        }
+        .modal-content h2 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .modal-content .modal-sub {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .driver-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg);
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+        .driver-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .driver-details .name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .driver-details .phone {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .driver-details .rating {
+            font-size: 13px;
+            color: var(--gold);
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-row .label {
+            color: var(--text-muted);
+        }
+        .detail-row .value {
+            font-weight: 500;
+        }
+        .modal-close {
+            margin-top: 16px;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            background: var(--border);
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-close:hover {
+            background: var(--red);
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .pulse-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+            margin-right: 6px;
+        }
+
+        @media (max-width: 900px) {
+            #sidebar {
+                width: 320px;
+                min-width: 320px;
+                padding: 16px 14px;
+            }
+        }
+        @media (max-width: 700px) {
+            body {
+                flex-direction: column-reverse;
+            }
+            #sidebar {
+                width: 100%;
+                min-width: unset;
+                height: 50vh;
+                border-radius: 20px 20px 0 0;
+            }
+            #map {
+                height: 50vh;
+            }
+            .battery-gauge-svg {
+                width: 100px;
+                height: 100px;
+            }
+            .battery-center-text {
+                font-size: 24px;
+            }
+        }
+        @media (max-width: 480px) {
+            .sidebar-header h1 {
+                font-size: 18px;
+            }
+            .rider-stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1>🛵 RentScoot <span>Rider</span></h1>
+            <div class="header-actions">
+                <button id="themeToggle" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+                <button id="refreshBtn" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </div>
+        <div class="subtitle">
+            <span class="pulse-dot"></span> Live Status · Tunis
+            <span id="live-clock">--:--:--</span>
+        </div>
+
+        <!-- ===== RIDER DASHBOARD ===== -->
+        <div id="riderContent">
+            <div class="rider-card">
+                <div class="scooter-id-big" id="riderScooterId">🛵 S-1027</div>
+                <div class="driver-name-big" id="riderDriverName">👤 Ahmed Dhahbi</div>
+
+                <!-- Battery Gauge -->
+                <div class="battery-gauge-container">
+                    <svg class="battery-gauge-svg" viewBox="0 0 120 120">
+                        <circle class="bg" cx="60" cy="60" r="50" />
+                        <circle class="progress" id="batteryCircle" cx="60" cy="60" r="50"
+                        stroke-dasharray="314.16" stroke-dashoffset="314.16" />
+                    </svg>
+                    <div class="battery-center-text">
+                        <span id="riderBatteryPct">92%</span>
+                        <span class="sub-text" id="riderBatteryStatus">Excellent</span>
+                    </div>
+                </div>
+
+                <!-- Rider Stats -->
+                <div class="rider-stats-grid">
+                    <div class="rider-stat-item">
+                        <div class="r-val blue" id="riderTrips">18</div>
+                        <div class="r-label">Trips Today</div>
+                    </div>
+                    <div class="rider-stat-item">
+                        <div class="r-val green" id="riderKm">22.7</div>
+                        <div class="r-label">KM Driven</div>
+                    </div>
+                    <div class="rider-stat-item">
+                        <div class="r-val" id="riderTemp" style="color: #f59e0b;">29°C</div>
+                        <div class="r-label">Battery Temp</div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="rider-location-box">
+                    <i class="fas fa-map-pin"></i>
+                    <span id="riderLocation">📍 La Goulette, Tunis</span>
+                </div>
+            </div>
+
+            <div class="rider-footer">
+                <i class="fas fa-shield-alt"></i> Your scooter health is monitored in real-time.
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MAP ===== -->
+    <div id="map"></div>
+
+    <!-- ===== MODAL ===== -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">🛵 S-1027</h2>
+            <div class="modal-sub" id="modalSub">📍 La Goulette</div>
+            <div class="driver-profile" id="driverProfile">
+                <div class="driver-avatar" id="driverAvatar">A</div>
+                <div class="driver-details">
+                    <div class="name" id="driverName">Ahmed Dhahbi</div>
+                    <div class="phone" id="driverPhone"><i class="fas fa-phone"></i> +216 99 887 766</div>
+                    <div class="rating" id="driverRating"><i class="fas fa-star"></i> 4.9 ⭐</div>
+                </div>
+            </div>
+            <div class="detail-row"><span class="label">Battery</span><span class="value" id="modalBattery">92%</span></div>
+            <div class="detail-row"><span class="label">Status</span><span class="value" id="modalStatus">✅ Healthy</span></div>
+            <div class="detail-row"><span class="label">Distance Today</span><span class="value" id="modalKm">22.7 km</span></div>
+            <div class="detail-row"><span class="label">Battery Temp</span><span class="value" id="modalTemp">29°C</span></div>
+            <div class="detail-row"><span class="label">Trips Today</span><span class="value" id="modalTrips">18</span></div>
+            <button class="modal-close" id="modalClose">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // CONFIGURATION
+        // =============================================
+        const RIDER_SCOOTER_ID = 'S-1027';
+
+        // =============================================
+        // MOCK DATA
+        // =============================================
+        const scooterData = [{
+            id: 'S-1024',
+            lat: 36.8065,
+            lng: 10.1815,
+            battery: 87,
+            status: 'green',
+            location: 'Ave Habib Bourguiba',
+            temp: 32,
+            trips: 12,
+            kmDriven: 12.4,
+            driver: { name: 'Fatma Ben Ali', phone: '+216 98 765 432', rating: 4.8, avatar: 'F' }
+        }, {
+            id: 'S-1025',
+            lat: 36.8120,
+            lng: 10.1750,
+            battery: 23,
+            status: 'yellow',
+            location: 'Rue de Marseille',
+            temp: 38,
+            trips: 8,
+            kmDriven: 8.2,
+            driver: { name: 'Mohamed Karray', phone: '+216 55 123 456', rating: 4.2, avatar: 'M' }
+        }, {
+            id: 'S-1026',
+            lat: 36.7980,
+            lng: 10.1880,
+            battery: 5,
+            status: 'red',
+            location: 'Medina Parking Garage',
+            temp: 45,
+            trips: 3,
+            kmDriven: 3.0,
+            driver: { name: 'Sara Bouazizi', phone: '+216 22 334 455', rating: 3.9, avatar: 'S' }
+        }, {
+            id: 'S-1027',
+            lat: 36.8200,
+            lng: 10.1650,
+            battery: 92,
+            status: 'green',
+            location: 'La Goulette',
+            temp: 29,
+            trips: 18,
+            kmDriven: 22.7,
+            driver: { name: 'Ahmed Dhahbi', phone: '+216 99 887 766', rating: 4.9, avatar: 'A' }
+        }, {
+            id: 'S-1028',
+            lat: 36.7850,
+            lng: 10.1950,
+            battery: 15,
+            status: 'yellow',
+            location: 'El Menzah',
+            temp: 40,
+            trips: 5,
+            kmDriven: 5.9,
+            driver: { name: 'Nour Jebali', phone: '+216 33 456 789', rating: 4.0, avatar: 'N' }
+        }, {
+            id: 'S-1029',
+            lat: 36.8300,
+            lng: 10.1500,
+            battery: 78,
+            status: 'green',
+            location: 'Ave de la République',
+            temp: 31,
+            trips: 14,
+            kmDriven: 15.3,
+            driver: { name: 'Amira Gharbi', phone: '+216 77 888 999', rating: 4.7, avatar: 'A' }
+        }, {
+            id: 'S-1030',
+            lat: 36.8000,
+            lng: 10.2100,
+            battery: 42,
+            status: 'green',
+            location: 'Berges du Lac',
+            temp: 33,
+            trips: 9,
+            kmDriven: 10.1,
+            driver: { name: 'Youssef Miled', phone: '+216 11 222 333', rating: 4.5, avatar: 'Y' }
+        }, {
+            id: 'S-1031',
+            lat: 36.8150,
+            lng: 10.1850,
+            battery: 8,
+            status: 'red',
+            location: 'Bab El Bhar',
+            temp: 43,
+            trips: 2,
+            kmDriven: 1.8,
+            driver: { name: 'Hela Mansour', phone: '+216 44 555 666', rating: 4.1, avatar: 'H' }
+        }, {
+            id: 'S-1032',
+            lat: 36.7900,
+            lng: 10.1700,
+            battery: 65,
+            status: 'green',
+            location: 'Cité Ennasr',
+            temp: 30,
+            trips: 11,
+            kmDriven: 14.6,
+            driver: { name: 'Karim Ben Amor', phone: '+216 66 777 888', rating: 4.3, avatar: 'K' }
+        }, {
+            id: 'S-1033',
+            lat: 36.8350,
+            lng: 10.1450,
+            battery: 95,
+            status: 'green',
+            location: 'Ariana',
+            temp: 27,
+            trips: 22,
+            kmDriven: 28.4,
+            driver: { name: 'Lamia Fekih', phone: '+216 88 999 000', rating: 4.9, avatar: 'L' }
+        }, ];
+
+        let scooters = JSON.parse(JSON.stringify(scooterData));
+        let markers = [];
+
+        // =============================================
+        // MAP INIT
+        // =============================================
+        const map = L.map('map', {
+            zoomControl: true,
+            fadeAnimation: true,
+        }).setView([36.8065, 10.1815], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // =============================================
+        // HELPERS
+        // =============================================
+        function getStatusLabel(status) {
+            return { green: 'Healthy', yellow: 'Low Battery', red: 'Needs Service' } [status] || status;
+        }
+
+        function getStatusIcon(status) {
+            return { green: '✅', yellow: '⚠️', red: '🔴' } [status] || '⚪';
+        }
+
+        function getBatteryStatus(battery) {
+            if (battery >= 70) return 'Excellent';
+            if (battery >= 40) return 'Good';
+            if (battery >= 15) return 'Low';
+            return 'Critical';
+        }
+
+        function getBatteryColor(battery) {
+            if (battery >= 70) return '#22c55e';
+            if (battery >= 40) return '#f59e0b';
+            if (battery >= 15) return '#f97316';
+            return '#ef4444';
+        }
+
+        // =============================================
+        // LIVE CLOCK
+        // =============================================
+        function updateClock() {
+            document.getElementById('live-clock').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // =============================================
+        // RENDER FUNCTIONS
+        // =============================================
+        function renderMap() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            const rider = scooters.find(s => s.id === RIDER_SCOOTER_ID);
+            if (!rider) return;
+
+            const color = rider.status === 'green' ? '#22c55e' : rider.status === 'yellow' ? '#f59e0b' : '#ef4444';
+            const marker = L.circleMarker([rider.lat, rider.lng], {
+                radius: 22,
+                fillColor: color,
+                color: 'white',
+                weight: 4,
+                opacity: 1,
+                fillOpacity: 0.95,
+            }).addTo(map);
+
+            marker.bindPopup(`
+                        <b style="font-size:18px;">🛵 ${rider.id}</b><br>
+                        <span style="color:#3d5a78;">👤 ${rider.driver.name}</span><br>
+                        <span style="color:#3d5a78;">🔋 ${rider.battery}% · ${getStatusLabel(rider.status)}</span><br>
+                        <span style="color:#7a8fa6;font-size:13px;">📍 ${rider.location}</span>
+                    `);
+
+            marker.on('click', () => {
+                openModal(rider.id);
+                map.setView([rider.lat, rider.lng], 16, { animate: true });
+            });
+
+            markers.push(marker);
+            map.setView([rider.lat, rider.lng], 15, { animate: true });
+        }
+
+        function renderRiderUI() {
+            const s = scooters.find(s => s.id === RIDER_SCOOTER_ID);
+            if (!s) return;
+
+            document.getElementById('riderScooterId').textContent = `🛵 ${s.id}`;
+            document.getElementById('riderDriverName').textContent = `👤 ${s.driver.name}`;
+            document.getElementById('riderLocation').textContent = `📍 ${s.location}`;
+            document.getElementById('riderTrips').textContent = s.trips || 0;
+            document.getElementById('riderKm').textContent = s.kmDriven.toFixed(1);
+            document.getElementById('riderTemp').textContent = `${s.temp || 32}°C`;
+
+            const pct = s.battery;
+            const circle = document.getElementById('batteryCircle');
+            const circumference = 314.16;
+            circle.style.strokeDashoffset = circumference - (pct / 100) * circumference;
+            circle.style.stroke = getBatteryColor(pct);
+
+            document.getElementById('riderBatteryPct').textContent = `${pct}%`;
+            const statusText = getBatteryStatus(pct);
+            document.getElementById('riderBatteryStatus').textContent = statusText;
+            document.getElementById('riderBatteryStatus').style.color = getBatteryColor(pct);
+        }
+
+        function renderAll() {
+            renderMap();
+            renderRiderUI();
+        }
+
+        // =============================================
+        // MODAL
+        // =============================================
+        function openModal(id) {
+            const s = scooters.find(s => s.id === id);
+            if (!s) return;
+
+            document.getElementById('modalTitle').textContent = `🛵 ${s.id}`;
+            document.getElementById('modalSub').textContent = `📍 ${s.location}`;
+            document.getElementById('modalBattery').textContent = `${s.battery}%`;
+            document.getElementById('modalStatus').textContent = `${getStatusIcon(s.status)} ${getStatusLabel(s.status)}`;
+            document.getElementById('modalStatus').style.color = s.status === 'green' ? '#22c55e' : s.status === 'yellow' ?
+                '#f59e0b' : '#ef4444';
+            document.getElementById('modalKm').textContent = `${s.kmDriven.toFixed(1)} km`;
+            document.getElementById('modalTemp').textContent = `${s.temp || 32}°C`;
+            document.getElementById('modalTrips').textContent = s.trips || 0;
+
+            const d = s.driver || { name: 'Unknown', phone: 'N/A', rating: 0, avatar: '?' };
+            document.getElementById('driverName').textContent = d.name;
+            document.getElementById('driverPhone').innerHTML = `<i class="fas fa-phone"></i> ${d.phone}`;
+            document.getElementById('driverRating').innerHTML = `<i class="fas fa-star"></i> ${d.rating} ⭐`;
+            document.getElementById('driverAvatar').textContent = d.avatar || d.name.charAt(0);
+
+            document.getElementById('modal').classList.add('active');
+        }
+
+        document.getElementById('modalClose').addEventListener('click', () => {
+            document.getElementById('modal').classList.remove('active');
+        });
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) document.getElementById('modal').classList.remove('active');
+        });
+
+        // =============================================
+        // THEME TOGGLE
+        // =============================================
+        let dark = false;
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            dark = !dark;
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            document.getElementById('themeToggle').innerHTML = dark ? '<i class="fas fa-sun"></i>' :
+            '<i class="fas fa-moon"></i>';
+        });
+
+        // =============================================
+        // REFRESH
+        // =============================================
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            const btn = document.getElementById('refreshBtn');
+            btn.style.animation = 'spin 0.6s linear';
+            setTimeout(() => btn.style.animation = '', 600);
+
+            const s = scooters.find(s => s.id === RIDER_SCOOTER_ID);
+            if (s) {
+                const drain = Math.random() * 3;
+                s.battery = Math.max(0, Math.round(s.battery - drain));
+                s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
+                const extraKm = Math.random() * 2;
+                s.kmDriven = Math.round((s.kmDriven + extraKm) * 10) / 10;
+                s.trips = (s.trips || 0) + Math.floor(Math.random() * 2);
+            }
+            renderAll();
+        });
+
+        // =============================================
+        // REAL-TIME SIMULATION
+        // =============================================
+        setInterval(() => {
+            const s = scooters.find(s => s.id === RIDER_SCOOTER_ID);
+            if (s) {
+                const drain = (Math.random() * 1.2);
+                s.battery = Math.max(0, Math.round(s.battery - drain));
+                s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
+                const extraKm = (Math.random() * 1.8);
+                s.kmDriven = Math.round((s.kmDriven + extraKm) * 10) / 10;
+                s.trips = (s.trips || 0) + (Math.random() > 0.7 ? 1 : 0);
+                renderAll();
+            }
+        }, 15000);
+
+        // =============================================
+        // INIT
+        // =============================================
+        renderAll();
+    </script>
+
+</body>
+</html>
