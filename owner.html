@@ -9,52 +9,71 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Font Awesome -->
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== RESET & BASE ===== */
+        /* =============================================
+           1. ROOT VARIABLES
+           ============================================= */
+        :root {
+            --rose: #F9EFF2;
+            --rose-dark: #F5D6E0;
+            --mauve: #C9A7EB;
+            --mauve-dark: #B388E0;
+            --plum: #4A235A;
+            --plum-light: #6C3483;
+            --gold: #D4AF37;
+            --gold-light: #E8C95A;
+            --white: #FFFFFF;
+            --bg: #FCF8FA;
+            --card-bg: #FFFFFF;
+            --text-primary: #2C1A3A;
+            --text-secondary: #6C4A7A;
+            --text-muted: #A88B9A;
+            --border: #F0E6EA;
+            --shadow: 0 8px 32px rgba(74, 35, 90, 0.10);
+            --shadow-hover: 0 12px 40px rgba(74, 35, 90, 0.18);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --header-bg: rgba(255, 255, 255, 0.92);
+            --green: #22C55E;
+            --green-bg: #E6F7E6;
+            --yellow: #D4AF37;
+            --yellow-bg: #FCF3E0;
+            --red: #D32F2F;
+            --red-bg: #FDE8E8;
+            --earnings-color: #B388E0;
+        }
+
+        [data-theme="dark"] {
+            --bg: #1A0F22;
+            --card-bg: #2C1A3A;
+            --header-bg: rgba(26, 15, 34, 0.95);
+            --text-primary: #F5EAF8;
+            --text-secondary: #D4B8D9;
+            --text-muted: #9A7A9F;
+            --border: #3D2A4A;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.5);
+            --rose: #2C1A3A;
+            --rose-dark: #3D2A4A;
+            --green-bg: #1A3A2A;
+            --yellow-bg: #3D3A1A;
+            --red-bg: #3D1A1A;
+        }
+
+        /* =============================================
+           2. RESET & BASE
+           ============================================= */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        :root {
-            --bg: #f0f4f9;
-            --sidebar-bg: #ffffff;
-            --card-bg: #ffffff;
-            --text-primary: #0b1e33;
-            --text-secondary: #3d5a78;
-            --text-muted: #7a8fa6;
-            --border: #e2e8f0;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-            --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.12);
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --green: #22c55e;
-            --green-bg: #dcfce7;
-            --yellow: #f59e0b;
-            --yellow-bg: #fef3c7;
-            --red: #ef4444;
-            --red-bg: #fee2e2;
-            --blue: #2563eb;
-            --blue-bg: #dbeafe;
-            --earnings-color: #8b5cf6;
-        }
-
-        [data-theme="dark"] {
-            --bg: #0f172a;
-            --sidebar-bg: #1e293b;
-            --card-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border: #334155;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-            --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.6);
         }
 
         body {
@@ -62,6 +81,7 @@
             background: var(--bg);
             color: var(--text-primary);
             display: flex;
+            flex-direction: column;
             height: 100vh;
             overflow: hidden;
             transition: background var(--transition), color var(--transition);
@@ -70,59 +90,142 @@
         ::-webkit-scrollbar {
             width: 5px;
         }
+        ::-webkit-scrollbar-track {
+            background: var(--rose);
+        }
         ::-webkit-scrollbar-thumb {
-            background: var(--text-muted);
+            background: var(--mauve);
             border-radius: 10px;
         }
 
-        /* ===== SIDEBAR ===== */
-        #sidebar {
-            width: 380px;
-            min-width: 380px;
-            background: var(--sidebar-bg);
-            padding: 24px 20px;
+        /* =============================================
+           3. HEADER WITH NAVIGATION TABS
+           ============================================= */
+        .site-header {
+            background: var(--header-bg);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 32px;
             display: flex;
-            flex-direction: column;
-            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.04);
-            z-index: 20;
-            transition: background var(--transition), width 0.3s;
-            overflow: hidden;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 30;
+            transition: background var(--transition), border-color var(--transition);
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
-        .sidebar-header {
+        .header-left {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 6px;
+            gap: 16px;
         }
-        .sidebar-header h1 {
-            font-size: 24px;
-            font-weight: 700;
+
+        .logo {
             display: flex;
             align-items: center;
             gap: 10px;
+            text-decoration: none;
         }
-        .sidebar-header h1 span {
-            background: var(--blue);
+        .logo-mark {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-            font-size: 12px;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-weight: 500;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+            position: relative;
+            overflow: hidden;
         }
+        .logo-mark::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            background: var(--gold);
+            opacity: 0.3;
+            border-radius: 50%;
+        }
+        .logo-mark span {
+            position: relative;
+            z-index: 2;
+        }
+        .logo-text .brand {
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--plum);
+            letter-spacing: -0.3px;
+        }
+        .logo-text .brand .mauve {
+            color: var(--mauve-dark);
+        }
+        .logo-text .tagline {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+        }
+
+        /* Navigation Tabs */
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--rose);
+            padding: 4px;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+        }
+        .header-nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 16px;
+            border-radius: 30px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .header-nav a i {
+            font-size: 14px;
+        }
+        .header-nav a:hover {
+            color: var(--plum);
+            background: rgba(74, 35, 90, 0.05);
+        }
+        .header-nav a.active {
+            background: var(--plum);
+            color: white;
+            box-shadow: 0 4px 12px rgba(74, 35, 90, 0.25);
+        }
+        .header-nav a.active i {
+            color: white;
+        }
+
         .header-actions {
             display: flex;
-            gap: 8px;
             align-items: center;
+            gap: 8px;
         }
         .header-actions button {
-            background: var(--border);
-            border: none;
+            background: var(--rose);
+            border: 1px solid var(--border);
             border-radius: 50%;
             width: 36px;
             height: 36px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             color: var(--text-secondary);
             transition: var(--transition);
             display: flex;
@@ -130,158 +233,515 @@
             justify-content: center;
         }
         .header-actions button:hover {
-            background: var(--blue);
+            background: var(--plum);
             color: white;
+            border-color: var(--plum);
             transform: scale(1.05);
         }
 
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 13px;
-            margin-bottom: 16px;
+        .user-badge {
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-        .subtitle i {
-            font-size: 10px;
-            color: var(--green);
-        }
-        #live-clock {
-            font-weight: 600;
-            color: var(--blue);
-            font-size: 13px;
-            margin-left: auto;
-        }
-
-        /* ===== STATS ===== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .stat-card {
-            background: var(--card-bg);
+            gap: 10px;
+            padding: 5px 12px 5px 8px;
+            background: var(--rose);
+            border-radius: 30px;
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px 4px;
-            text-align: center;
+            cursor: pointer;
             transition: var(--transition);
         }
-        .stat-card:hover {
-            transform: translateY(-2px);
+        .user-badge:hover {
+            border-color: var(--mauve);
             box-shadow: var(--shadow);
         }
-        .stat-card .number {
-            font-size: 20px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-        .stat-card .number.green {
-            color: var(--green);
-        }
-        .stat-card .number.yellow {
-            color: var(--yellow);
-        }
-        .stat-card .number.red {
-            color: var(--red);
-        }
-        .stat-card .number.blue {
-            color: var(--blue);
-        }
-        .stat-card .number.earnings {
-            color: var(--earnings-color);
-        }
-        .stat-card .label {
-            font-size: 9px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            font-weight: 600;
-            margin-top: 2px;
-        }
-
-        /* ===== SEARCH & FILTERS ===== */
-        .search-box {
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
+            color: white;
             display: flex;
             align-items: center;
-            background: var(--bg);
-            border-radius: 12px;
-            padding: 0 14px;
-            margin-bottom: 14px;
-            border: 1px solid var(--border);
-            transition: var(--transition);
-        }
-        .search-box:focus-within {
-            border-color: var(--blue);
-            box-shadow: 0 0 0 3px var(--blue-bg);
-        }
-        .search-box i {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-        .search-box input {
-            background: transparent;
-            border: none;
-            padding: 10px 12px;
+            justify-content: center;
             font-size: 13px;
-            width: 100%;
-            outline: none;
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            font-weight: 700;
         }
-
-        .filter-buttons {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 14px;
-            flex-wrap: wrap;
-        }
-        .filter-btn {
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: transparent;
-            cursor: pointer;
+        .user-name {
             font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .user-role {
+            font-size: 9px;
+            color: var(--text-muted);
             font-weight: 500;
-            color: var(--text-secondary);
-            transition: var(--transition);
-            font-family: 'Inter', sans-serif;
-        }
-        .filter-btn:hover {
-            background: var(--border);
-        }
-        .filter-btn.active {
-            background: var(--blue);
-            color: white;
-            border-color: var(--blue);
-        }
-        .filter-btn i {
-            margin-right: 4px;
-            font-size: 11px;
         }
 
-        /* ===== SCOOTER LIST ===== */
-        #scooter-list {
+        /* =============================================
+           4. MAIN LAYOUT
+           ============================================= */
+        .main-dashboard {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .dashboard-panel {
+            width: 480px;
+            min-width: 480px;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 16px 20px 20px 20px;
+            transition: background var(--transition);
+            border-right: 1px solid var(--border);
+        }
+
+        .panel-scroll {
             flex: 1;
             overflow-y: auto;
             padding-right: 4px;
         }
 
+        /* =============================================
+           5. TAB CONTENT (Show/Hide via JS)
+           ============================================= */
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            height: 100%;
+        }
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* =============================================
+           6. SECTION HEADERS
+           ============================================= */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+            margin-bottom: 2px;
+        }
+        .section-header i {
+            color: var(--mauve-dark);
+            font-size: 16px;
+        }
+        .section-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 2px 0 8px 0;
+        }
+
+        /* =============================================
+           7. STATS CARDS
+           ============================================= */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 4px;
+            text-align: center;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        .stat-card .stat-number {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--plum);
+            line-height: 1.2;
+        }
+        .stat-card .stat-number.green {
+            color: var(--green);
+        }
+        .stat-card .stat-number.yellow {
+            color: var(--gold);
+        }
+        .stat-card .stat-number.red {
+            color: var(--red);
+        }
+        .stat-card .stat-number.earnings {
+            color: var(--earnings-color);
+        }
+        .stat-card .stat-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            margin-top: 2px;
+        }
+        .stat-card .stat-icon {
+            font-size: 14px;
+            color: var(--mauve-dark);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* =============================================
+           8. BATTERY & PERFORMANCE
+           ============================================= */
+        .battery-performance-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+        .bp-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 4px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .bp-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        .bp-card .bp-icon {
+            font-size: 18px;
+            color: var(--mauve-dark);
+            display: block;
+            margin-bottom: 2px;
+        }
+        .bp-card .bp-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .bp-card .bp-value.green {
+            color: var(--green);
+        }
+        .bp-card .bp-value.yellow {
+            color: var(--gold);
+        }
+        .bp-card .bp-value.red {
+            color: var(--red);
+        }
+        .bp-card .bp-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
+
+        /* =============================================
+           9. FINANCIAL SUMMARY
+           ============================================= */
+        .financial-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .fin-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .fin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        .fin-card .fin-icon {
+            font-size: 24px;
+            color: var(--gold);
+            width: 40px;
+            text-align: center;
+        }
+        .fin-card .fin-info {
+            flex: 1;
+        }
+        .fin-card .fin-info .fin-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--plum);
+        }
+        .fin-card .fin-info .fin-value.earnings {
+            color: var(--earnings-color);
+        }
+        .fin-card .fin-info .fin-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* =============================================
+           10. MANAGEMENT TOOLS
+           ============================================= */
+        .search-filter-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0 12px;
+            flex: 2;
+            min-width: 130px;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+        .search-box:focus-within {
+            border-color: var(--mauve);
+            box-shadow: 0 0 0 3px rgba(201, 167, 235, 0.3);
+        }
+        .search-box i {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            padding: 8px 10px;
+            font-size: 12px;
+            width: 100%;
+            outline: none;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            flex: 3;
+        }
+        .filter-btn {
+            padding: 5px 12px;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            background: var(--card-bg);
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            box-shadow: var(--shadow);
+        }
+        .filter-btn:hover {
+            background: var(--rose);
+        }
+        .filter-btn.active {
+            background: var(--plum);
+            color: white;
+            border-color: var(--plum);
+        }
+        .filter-btn i {
+            margin-right: 4px;
+            font-size: 9px;
+        }
+
+        .management-actions {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 8px;
+        }
+        .export-btn {
+            padding: 10px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+        }
+        .export-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(74, 35, 90, 0.3);
+        }
+        .repair-toggle {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+        }
+        .repair-toggle:hover {
+            background: var(--plum);
+            color: white;
+            border-color: var(--plum);
+        }
+        .repair-toggle i {
+            color: var(--mauve-dark);
+        }
+        .repair-toggle:hover i {
+            color: white;
+        }
+
+        .repair-list {
+            display: none;
+            margin-top: 8px;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .repair-list.open {
+            display: flex;
+        }
+        .repair-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow);
+        }
+        .repair-card .r-icon {
+            font-size: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .repair-card .r-info .r-name {
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-primary);
+        }
+        .repair-card .r-info .r-addr {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .repair-card .r-info .r-phone {
+            font-size: 10px;
+            color: var(--mauve-dark);
+            font-weight: 500;
+        }
+
+        /* =============================================
+           11. SUPPORT TAB CONTENT
+           ============================================= */
+        .support-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .support-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .support-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        .support-card .s-icon {
+            font-size: 32px;
+            color: var(--mauve-dark);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .support-card .s-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        .support-card .s-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .support-card .s-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: var(--mauve-dark);
+            font-weight: 600;
+            font-size: 12px;
+            text-decoration: none;
+        }
+        .support-card .s-link:hover {
+            color: var(--plum);
+        }
+
+        /* =============================================
+           12. SCOOTER LIST
+           ============================================= */
+        #scooter-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 120px;
+        }
+
         .scooter-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 8px;
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 12px;
             border-left: 4px solid var(--green);
+            box-shadow: var(--shadow);
         }
         .scooter-card:hover {
             transform: translateX(4px);
@@ -291,21 +751,22 @@
             border-left-color: var(--green);
         }
         .scooter-card.status-yellow {
-            border-left-color: var(--yellow);
+            border-left-color: var(--gold);
         }
         .scooter-card.status-red {
             border-left-color: var(--red);
         }
 
         .scooter-icon {
-            font-size: 22px;
-            width: 36px;
-            height: 36px;
+            font-size: 18px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg);
+            background: var(--rose);
+            color: var(--plum);
             flex-shrink: 0;
         }
 
@@ -315,22 +776,23 @@
         }
         .scooter-info .id {
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
+            color: var(--text-primary);
         }
         .scooter-info .driver-name {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-secondary);
         }
         .scooter-info .earnings-row {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--earnings-color);
             font-weight: 600;
             display: flex;
             gap: 10px;
-            margin-top: 2px;
+            margin-top: 1px;
         }
         .scooter-info .location {
-            font-size: 10px;
+            font-size: 9px;
             color: var(--text-muted);
             white-space: nowrap;
             overflow: hidden;
@@ -345,7 +807,7 @@
             display: inline-block;
             padding: 1px 8px;
             border-radius: 12px;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 600;
             text-transform: uppercase;
         }
@@ -355,57 +817,39 @@
         }
         .badge.yellow {
             background: var(--yellow-bg);
-            color: var(--yellow);
+            color: var(--gold);
         }
         .badge.red {
             background: var(--red-bg);
             color: var(--red);
         }
         .battery-text {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
-            margin-top: 2px;
+            color: var(--text-primary);
+            margin-top: 1px;
         }
 
-        /* ===== EXPORT ===== */
-        .export-btn {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 12px;
-            background: var(--blue);
-            color: white;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-family: 'Inter', sans-serif;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .export-btn:hover {
-            transform: scale(1.01);
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-        }
-
-        /* ===== MAP ===== */
+        /* =============================================
+           13. MAP
+           ============================================= */
         #map {
             flex: 1;
             height: 100vh;
             z-index: 10;
+            background: var(--bg);
         }
 
-        /* ===== MODAL ===== */
+        /* =============================================
+           14. MODAL
+           ============================================= */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(44, 26, 58, 0.6);
             backdrop-filter: blur(6px);
             z-index: 999;
             display: none;
@@ -417,67 +861,52 @@
             display: flex;
         }
         .modal-content {
-            background: var(--sidebar-bg);
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 460px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 380px;
             width: 90%;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.3s;
+            box-shadow: 0 20px 50px rgba(44, 26, 58, 0.3);
             border: 1px solid var(--border);
-            max-height: 90vh;
-            overflow-y: auto;
         }
         .modal-content h2 {
-            font-size: 20px;
-            margin-bottom: 4px;
+            font-size: 18px;
+            color: var(--plum);
+            margin-bottom: 2px;
         }
         .modal-content .modal-sub {
             color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 16px;
+            font-size: 13px;
+            margin-bottom: 12px;
         }
         .driver-profile {
             display: flex;
             align-items: center;
-            gap: 16px;
-            background: var(--bg);
-            padding: 14px 18px;
-            border-radius: 14px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border);
+            gap: 12px;
+            background: var(--rose);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 12px;
         }
         .driver-avatar {
-            width: 56px;
-            height: 56px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            background: var(--blue);
+            background: linear-gradient(135deg, var(--plum), var(--mauve-dark));
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 700;
             flex-shrink: 0;
-        }
-        .driver-details .name {
-            font-weight: 600;
-            font-size: 16px;
-        }
-        .driver-details .phone {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-        .driver-details .rating {
-            font-size: 13px;
-            color: #f59e0b;
         }
         .detail-row {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 6px 0;
             border-bottom: 1px solid var(--border);
-            font-size: 14px;
+            font-size: 13px;
         }
         .detail-row:last-child {
             border-bottom: none;
@@ -487,17 +916,18 @@
         }
         .detail-row .value {
             font-weight: 500;
+            color: var(--text-primary);
         }
         .detail-row .value.earnings {
             color: var(--earnings-color);
             font-weight: 700;
         }
         .modal-close {
-            margin-top: 16px;
+            margin-top: 12px;
             padding: 10px;
             width: 100%;
             border: none;
-            border-radius: 12px;
+            border-radius: var(--radius-sm);
             background: var(--border);
             color: var(--text-primary);
             font-weight: 600;
@@ -510,31 +940,15 @@
             color: white;
         }
 
+        /* =============================================
+           15. ANIMATIONS
+           ============================================= */
         @keyframes fadeIn {
             from {
                 opacity: 0;
             }
             to {
                 opacity: 1;
-            }
-        }
-        @keyframes slideUp {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        @keyframes pulse {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
             }
         }
         @keyframes spin {
@@ -545,131 +959,475 @@
                 transform: rotate(360deg);
             }
         }
-        .pulse-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--green);
-            animation: pulse 2s infinite;
-            margin-right: 6px;
-        }
 
-        @media (max-width: 900px) {
-            #sidebar {
-                width: 320px;
-                min-width: 320px;
-                padding: 16px 14px;
+        /* =============================================
+           16. RESPONSIVE
+           ============================================= */
+        @media (max-width: 1024px) {
+            .dashboard-panel {
+                width: 400px;
+                min-width: 400px;
+                padding: 14px 16px;
             }
-            .stats-grid {
+            .stats-row {
                 grid-template-columns: repeat(3, 1fr);
             }
-        }
-        @media (max-width: 700px) {
-            body {
-                flex-direction: column-reverse;
+            .battery-performance-grid {
+                grid-template-columns: 1fr 1fr;
             }
-            #sidebar {
+            .financial-grid {
+                grid-template-columns: 1fr;
+            }
+            .management-actions {
+                grid-template-columns: 1fr;
+            }
+            .support-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .site-header {
+                padding: 8px 14px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .header-left {
+                justify-content: space-between;
+            }
+            .header-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                border-radius: 20px;
+                padding: 4px 6px;
+                gap: 4px;
+            }
+            .header-nav a {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+            .header-nav a i {
+                font-size: 12px;
+            }
+            .dashboard-panel {
                 width: 100%;
                 min-width: unset;
                 height: 50vh;
-                border-radius: 20px 20px 0 0;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 10px 12px;
             }
             #map {
                 height: 50vh;
             }
-            .stats-grid {
+            .stats-row {
                 grid-template-columns: repeat(3, 1fr);
             }
-        }
-        @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .battery-performance-grid {
+                grid-template-columns: 1fr 1fr;
             }
-            .stat-card .number {
+            .search-filter-row {
+                flex-direction: column;
+            }
+            .filter-buttons {
+                flex-wrap: wrap;
+            }
+            .financial-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .support-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-actions {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-text .brand {
                 font-size: 16px;
             }
-            .sidebar-header h1 {
-                font-size: 18px;
+            .logo-mark {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            .user-name {
+                font-size: 10px;
+            }
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stat-card .stat-number {
+                font-size: 15px;
+            }
+            .battery-performance-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .bp-card .bp-value {
+                font-size: 15px;
+            }
+            .financial-grid {
+                grid-template-columns: 1fr;
             }
             .modal-content {
-                padding: 20px;
+                padding: 16px;
+            }
+            .management-actions {
+                grid-template-columns: 1fr;
+            }
+            .header-nav a {
+                font-size: 10px;
+                padding: 4px 8px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== SIDEBAR ===== -->
-    <div id="sidebar">
-        <div class="sidebar-header">
-            <h1>🛵 RentScoot <span>Owner</span></h1>
-            <div class="header-actions">
-                <button id="themeToggle" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
-                <button id="refreshBtn" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+    <!-- ============================================= -->
+    <!-- HEADER WITH TABS -->
+    <!-- ============================================= -->
+    <header class="site-header">
+        <div class="header-left">
+            <a href="#" class="logo">
+                <div class="logo-mark"><span>R</span></div>
+                <div class="logo-text">
+                    <span class="brand">Rent<span class="mauve">Scoot</span></span>
+                    <div class="tagline">Empowering Women in Mobility</div>
+                </div>
+            </a>
+
+            <!-- Navigation Tabs -->
+            <nav class="header-nav">
+                <a href="#" class="active" data-tab="dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="#" data-tab="fleet"><i class="fas fa-map-marked-alt"></i> Fleet</a>
+                <a href="#" data-tab="reports"><i class="fas fa-chart-bar"></i> Reports</a>
+                <a href="#" data-tab="support"><i class="fas fa-headset"></i> Support</a>
+            </nav>
+        </div>
+
+        <div class="header-actions">
+            <button id="themeToggle" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+            <button id="refreshBtn" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+            <div class="user-badge">
+                <div class="user-avatar">F</div>
+                <div>
+                    <div class="user-name">Fatma</div>
+                    <div class="user-role">Owner</div>
+                </div>
             </div>
         </div>
-        <div class="subtitle">
-            <span class="pulse-dot"></span> Live Fleet · Tunis
-            <span id="live-clock">--:--:--</span>
+    </header>
+
+    <!-- ============================================= -->
+    <!-- MAIN DASHBOARD -->
+    <!-- ============================================= -->
+    <div class="main-dashboard">
+
+        <!-- LEFT PANEL -->
+        <div class="dashboard-panel">
+            <div class="panel-scroll">
+
+                <!-- ============================================= -->
+                <!-- TAB 1: DASHBOARD (Full Overview) -->
+                <!-- ============================================= -->
+                <div id="tab-dashboard" class="tab-content active">
+
+                    <!-- Fleet Overview -->
+                    <div>
+                        <div class="section-header"><i class="fas fa-motorcycle"></i> Fleet Overview</div>
+                        <hr class="section-divider" />
+                        <div class="stats-row">
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-motorcycle"></i></span>
+                                <div class="stat-number" id="totalCount">0</div>
+                                <div class="stat-label">Total</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-check-circle"></i></span>
+                                <div class="stat-number green" id="greenCount">0</div>
+                                <div class="stat-label">Healthy</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-triangle-exclamation"></i></span>
+                                <div class="stat-number yellow" id="yellowCount">0</div>
+                                <div class="stat-label">Low Battery</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-circle-exclamation"></i></span>
+                                <div class="stat-number red" id="redCount">0</div>
+                                <div class="stat-label">Service</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-coins"></i></span>
+                                <div class="stat-number earnings" id="totalEarnings">0.0</div>
+                                <div class="stat-label">Earnings (TND)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Battery & Performance -->
+                    <div>
+                        <div class="section-header"><i class="fas fa-bolt"></i> Battery & Performance</div>
+                        <hr class="section-divider" />
+                        <div class="battery-performance-grid">
+                            <div class="bp-card">
+                                <span class="bp-icon"><i class="fas fa-bolt"></i></span>
+                                <div class="bp-value" id="avgBattery">92%</div>
+                                <div class="bp-label">Avg Battery</div>
+                            </div>
+                            <div class="bp-card">
+                                <span class="bp-icon"><i class="fas fa-thermometer-half"></i></span>
+                                <div class="bp-value" id="avgTemp">32°C</div>
+                                <div class="bp-label">Avg Temp</div>
+                            </div>
+                            <div class="bp-card">
+                                <span class="bp-icon"><i class="fas fa-road"></i></span>
+                                <div class="bp-value green" id="totalKm">0</div>
+                                <div class="bp-label">Total KM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Summary -->
+                    <div>
+                        <div class="section-header"><i class="fas fa-coins"></i> Financial Summary</div>
+                        <hr class="section-divider" />
+                        <div class="financial-grid">
+                            <div class="fin-card">
+                                <div class="fin-icon"><i class="fas fa-coins"></i></div>
+                                <div class="fin-info">
+                                    <div class="fin-value earnings" id="todayEarnings">0.0</div>
+                                    <div class="fin-label">Today's Earnings (TND)</div>
+                                </div>
+                            </div>
+                            <div class="fin-card">
+                                <div class="fin-icon"><i class="fas fa-route"></i></div>
+                                <div class="fin-info">
+                                    <div class="fin-value" id="todayKm">0.0</div>
+                                    <div class="fin-label">Total KM Today</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Management Tools -->
+                    <div>
+                        <div class="section-header"><i class="fas fa-tools"></i> Management Tools</div>
+                        <hr class="section-divider" />
+                        <div class="search-filter-row">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchInput" placeholder="Search by ID..." />
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all"><i class="fas fa-list"></i> All</button>
+                                <button class="filter-btn" data-filter="green"><i class="fas fa-check-circle"></i> Healthy</button>
+                                <button class="filter-btn" data-filter="yellow"><i class="fas fa-triangle-exclamation"></i> Low</button>
+                                <button class="filter-btn" data-filter="red"><i class="fas fa-circle-exclamation"></i> Service</button>
+                            </div>
+                        </div>
+                        <div class="management-actions">
+                            <button class="export-btn" id="exportBtn"><i class="fas fa-file-pdf"></i> Export Report</button>
+                            <button class="repair-toggle" id="repairToggleBtn"><i class="fas fa-tools"></i> Repair Services</button>
+                        </div>
+                        <div class="repair-list" id="repairList"></div>
+                    </div>
+
+                    <!-- Fleet List -->
+                    <div>
+                        <div class="section-header"><i class="fas fa-list"></i> Fleet List</div>
+                        <hr class="section-divider" />
+                        <div id="scooter-list"></div>
+                    </div>
+                </div>
+
+                <!-- ============================================= -->
+                <!-- TAB 2: FLEET (Focus on Assets) -->
+                <!-- ============================================= -->
+                <div id="tab-fleet" class="tab-content">
+                    <div>
+                        <div class="section-header"><i class="fas fa-motorcycle"></i> Fleet Overview</div>
+                        <hr class="section-divider" />
+                        <div class="stats-row">
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-motorcycle"></i></span>
+                                <div class="stat-number" id="fleetTotal">0</div>
+                                <div class="stat-label">Total</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-check-circle"></i></span>
+                                <div class="stat-number green" id="fleetGreen">0</div>
+                                <div class="stat-label">Healthy</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-triangle-exclamation"></i></span>
+                                <div class="stat-number yellow" id="fleetYellow">0</div>
+                                <div class="stat-label">Low Battery</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-circle-exclamation"></i></span>
+                                <div class="stat-number red" id="fleetRed">0</div>
+                                <div class="stat-label">Service</div>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-icon"><i class="fas fa-coins"></i></span>
+                                <div class="stat-number earnings" id="fleetEarnings">0.0</div>
+                                <div class="stat-label">Earnings (TND)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-header"><i class="fas fa-tools"></i> Manage Fleet</div>
+                        <hr class="section-divider" />
+                        <div class="search-filter-row">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="fleetSearchInput" placeholder="Search by ID..." />
+                            </div>
+                            <div class="filter-buttons">
+                                <button class="filter-btn active" data-filter="all" id="fleetFilterAll"><i class="fas fa-list"></i> All</button>
+                                <button class="filter-btn" data-filter="green" id="fleetFilterGreen"><i class="fas fa-check-circle"></i> Healthy</button>
+                                <button class="filter-btn" data-filter="yellow" id="fleetFilterYellow"><i class="fas fa-triangle-exclamation"></i> Low</button>
+                                <button class="filter-btn" data-filter="red" id="fleetFilterRed"><i class="fas fa-circle-exclamation"></i> Service</button>
+                            </div>
+                        </div>
+                        <div id="fleet-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;min-height:120px;"></div>
+                    </div>
+                </div>
+
+                <!-- ============================================= -->
+                <!-- TAB 3: REPORTS (Focus on Financials) -->
+                <!-- ============================================= -->
+                <div id="tab-reports" class="tab-content">
+                    <div>
+                        <div class="section-header"><i class="fas fa-chart-bar"></i> Financial Reports</div>
+                        <hr class="section-divider" />
+                        <div class="financial-grid">
+                            <div class="fin-card">
+                                <div class="fin-icon"><i class="fas fa-coins"></i></div>
+                                <div class="fin-info">
+                                    <div class="fin-value earnings" id="reportEarnings">0.0</div>
+                                    <div class="fin-label">Total Earnings (TND)</div>
+                                </div>
+                            </div>
+                            <div class="fin-card">
+                                <div class="fin-icon"><i class="fas fa-route"></i></div>
+                                <div class="fin-info">
+                                    <div class="fin-value" id="reportKm">0.0</div>
+                                    <div class="fin-label">Total KM Driven</div>
+                                </div>
+                            </div>
+                            <div class="fin-card">
+                                <div class="fin-icon"><i class="fas fa-motorcycle"></i></div>
+                                <div class="fin-info">
+                                    <div class="fin-value" id="reportFleetSize">0</div>
+                                    <div class="fin-label">Fleet Size</div>
+                                </div>
+                            </div>
+                            <div class="fin-card">
+                                <div class="fin-icon"><i class="fas fa-bolt"></i></div>
+                                <div class="fin-info">
+                                    <div class="fin-value" id="reportAvgBattery">0%</div>
+                                    <div class="fin-label">Average Battery</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-header"><i class="fas fa-file-pdf"></i> Export & Insights</div>
+                        <hr class="section-divider" />
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <button class="export-btn" id="reportExportBtn" style="padding:14px;font-size:14px;"><i class="fas fa-file-pdf"></i> Export Full Report</button>
+                            <button class="repair-toggle" id="reportRefreshBtn" style="padding:14px;font-size:14px;" onclick="location.reload();"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+                        </div>
+                        <div style="margin-top:10px;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;box-shadow:var(--shadow);text-align:center;color:var(--text-muted);font-size:13px;">
+                            <i class="fas fa-info-circle" style="color:var(--mauve-dark);margin-right:6px;"></i> 
+                            Reports are generated based on real-time fleet data. Use this for bank loan applications and business planning.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================= -->
+                <!-- TAB 4: SUPPORT (Help & Contact) -->
+                <!-- ============================================= -->
+                <div id="tab-support" class="tab-content">
+                    <div>
+                        <div class="section-header"><i class="fas fa-headset"></i> Support Center</div>
+                        <hr class="section-divider" />
+                        <div class="support-grid">
+                            <div class="support-card">
+                                <span class="s-icon"><i class="fas fa-question-circle"></i></span>
+                                <div class="s-title">FAQ</div>
+                                <div class="s-desc">Find answers to the most common questions about managing your fleet.</div>
+                                <a href="#" class="s-link" onclick="alert('📖 FAQ Section\n\n1. How do I add a new scooter?\n2. How to assign a driver?\n3. How to generate a report?\n4. How to handle a low battery alert?');">Browse FAQs →</a>
+                            </div>
+                            <div class="support-card">
+                                <span class="s-icon"><i class="fas fa-envelope"></i></span>
+                                <div class="s-title">Contact Us</div>
+                                <div class="s-desc">Get in touch with our support team for personalized assistance.</div>
+                                <a href="#" class="s-link" onclick="alert('📧 Support\n\nEmail: support@rentscoot.tn\nPhone: +216 70 123 456\nHours: Mon-Fri 9:00 - 18:00');">Email Support →</a>
+                            </div>
+                            <div class="support-card">
+                                <span class="s-icon"><i class="fas fa-file-alt"></i></span>
+                                <div class="s-title">Documentation</div>
+                                <div class="s-desc">Read the full user guide and technical documentation for RentScoot.</div>
+                                <a href="#" class="s-link" onclick="alert('📄 Documentation\n\nFull user guide available for download.\nCovers: Dashboard, Fleet Management, Reports, and Safety Features.');">View Docs →</a>
+                            </div>
+                            <div class="support-card">
+                                <span class="s-icon"><i class="fas fa-phone"></i></span>
+                                <div class="s-title">Emergency Support</div>
+                                <div class="s-desc">24/7 emergency support for urgent fleet issues or rider safety concerns.</div>
+                                <a href="#" class="s-link" onclick="alert('🆘 Emergency Support\n\nCall: +216 80 123 456\nSMS: +216 55 123 456\nAlways available for urgent issues.');">Call Now →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
-        <!-- ===== STATS ===== -->
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card"><div class="number blue" id="totalCount">0</div><div class="label">Total</div></div>
-            <div class="stat-card"><div class="number green" id="greenCount">0</div><div class="label">Healthy</div></div>
-            <div class="stat-card"><div class="number yellow" id="yellowCount">0</div><div class="label">Low</div></div>
-            <div class="stat-card"><div class="number red" id="redCount">0</div><div class="label">Service</div></div>
-            <div class="stat-card"><div class="number earnings" id="totalEarnings">0.0</div><div class="label">💰 Earnings</div></div>
-        </div>
+        <!-- RIGHT PANEL: MAP -->
+        <div id="map"></div>
 
-        <!-- ===== SEARCH & FILTERS ===== -->
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Search by scooter ID..." />
-        </div>
-        <div class="filter-buttons">
-            <button class="filter-btn active" data-filter="all"><i class="fas fa-list"></i> All</button>
-            <button class="filter-btn" data-filter="green"><i class="fas fa-check-circle"></i> Healthy</button>
-            <button class="filter-btn" data-filter="yellow"><i class="fas fa-exclamation-triangle"></i> Low</button>
-            <button class="filter-btn" data-filter="red"><i class="fas fa-exclamation-circle"></i> Service</button>
-        </div>
-
-        <!-- ===== SCOOTER LIST ===== -->
-        <div id="scooter-list"></div>
-
-        <!-- ===== EXPORT ===== -->
-        <button class="export-btn" id="exportBtn"><i class="fas fa-file-pdf"></i> Export Fleet Report</button>
     </div>
 
-    <!-- ===== MAP ===== -->
-    <div id="map"></div>
-
-    <!-- ===== MODAL ===== -->
+    <!-- ============================================= -->
+    <!-- MODAL -->
+    <!-- ============================================= -->
     <div class="modal-overlay" id="modal">
         <div class="modal-content">
-            <h2 id="modalTitle">🛵 S-1024</h2>
-            <div class="modal-sub" id="modalSub">📍 Ave Habib Bourguiba</div>
-            <div class="driver-profile" id="driverProfile">
+            <h2 id="modalTitle"><i class="fas fa-motorcycle" style="color: var(--mauve-dark);"></i> S-1024</h2>
+            <div class="modal-sub" id="modalSub"><i class="fas fa-location-dot" style="color: var(--text-muted);"></i> Ave Habib Bourguiba</div>
+            <div class="driver-profile">
                 <div class="driver-avatar" id="driverAvatar">F</div>
-                <div class="driver-details">
-                    <div class="name" id="driverName">Fatma Ben Ali</div>
-                    <div class="phone" id="driverPhone"><i class="fas fa-phone"></i> +216 98 765 432</div>
-                    <div class="rating" id="driverRating"><i class="fas fa-star"></i> 4.8 ⭐</div>
+                <div>
+                    <div style="font-weight:600;font-size:15px;color:var(--text-primary);" id="driverName">Fatma Ben Ali</div>
+                    <div style="font-size:12px;color:var(--text-secondary);" id="driverPhone"><i class="fas fa-phone"></i> +216 98 765 432</div>
+                    <div style="font-size:12px;color:var(--gold);" id="driverRating"><i class="fas fa-star"></i> 4.8</div>
                 </div>
             </div>
             <div class="detail-row"><span class="label">Battery</span><span class="value" id="modalBattery">87%</span></div>
-            <div class="detail-row"><span class="label">Status</span><span class="value" id="modalStatus">✅ Healthy</span></div>
+            <div class="detail-row"><span class="label">Status</span><span class="value" id="modalStatus">Healthy</span></div>
             <div class="detail-row"><span class="label">Distance Today</span><span class="value" id="modalKm">12.4 km</span></div>
             <div class="detail-row"><span class="label">Earnings Today</span><span class="value earnings" id="modalEarnings">18.6 TND</span></div>
             <div class="detail-row"><span class="label">Shift Start</span><span class="value" id="modalShift">08:30 AM</span></div>
-            <div class="detail-row"><span class="label">Last Updated</span><span class="value" id="modalTime">Just now</span></div>
             <div class="detail-row"><span class="label">Battery Temp</span><span class="value" id="modalTemp">32°C</span></div>
             <div class="detail-row"><span class="label">Trips Today</span><span class="value" id="modalTrips">12</span></div>
-            <button class="modal-close" id="modalClose">Close</button>
+            <button class="modal-close" id="modalClose"><i class="fas fa-times"></i> Close</button>
         </div>
     </div>
 
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ============================================= -->
     <script>
         // =============================================
         // CONFIGURATION
@@ -791,19 +1549,28 @@
             driver: { name: 'Lamia Fekih', phone: '+216 88 999 000', rating: 4.9, shift: '07:00 AM', avatar: 'L' }
         }, ];
 
+        const repairShops = [{
+            name: 'El Manar Batteries',
+            address: '15 Rue du Koweït, Tunis 1002',
+            phone: '+216 71 234 567'
+        }, {
+            name: 'ScootFix Tunis',
+            address: 'Avenue Habib Bourguiba, Tunis 1001',
+            phone: '+216 29 876 543'
+        }, {
+            name: 'Mobility Care Center',
+            address: 'Cité Ennasr, Ariana 2080',
+            phone: '+216 55 667 889'
+        }, ];
+
         let scooters = JSON.parse(JSON.stringify(scooterData));
-        let currentFilter = 'all';
-        let searchQuery = '';
         let markers = [];
+        let repairOpen = false;
 
         // =============================================
-        // MAP INIT
+        // MAP
         // =============================================
-        const map = L.map('map', {
-            zoomControl: true,
-            fadeAnimation: true,
-        }).setView([36.8065, 10.1815], 13);
-
+        const map = L.map('map', { zoomControl: true, fadeAnimation: true }).setView([36.8065, 10.1815], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap',
             maxZoom: 19,
@@ -816,59 +1583,29 @@
             return { green: 'Healthy', yellow: 'Low Battery', red: 'Needs Service' } [status] || status;
         }
 
-        function getStatusIcon(status) {
-            return { green: '✅', yellow: '⚠️', red: '🔴' } [status] || '⚪';
-        }
-
         function calcEarnings(km) {
             return Math.round(km * EARNINGS_PER_KM * 10) / 10;
         }
 
-        // =============================================
-        // LIVE CLOCK
-        // =============================================
-        function updateClock() {
-            document.getElementById('live-clock').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
-        }
-        updateClock();
-        setInterval(updateClock, 1000);
-
-        // =============================================
-        // RENDER FUNCTIONS
-        // =============================================
-        function renderStats() {
-            const total = scooters.length;
-            const green = scooters.filter(s => s.status === 'green').length;
-            const yellow = scooters.filter(s => s.status === 'yellow').length;
-            const red = scooters.filter(s => s.status === 'red').length;
-            const totalEarnings = scooters.reduce((sum, s) => sum + calcEarnings(s.kmDriven), 0);
-
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('greenCount').textContent = green;
-            document.getElementById('yellowCount').textContent = yellow;
-            document.getElementById('redCount').textContent = red;
-            document.getElementById('totalEarnings').textContent = totalEarnings.toFixed(1);
-        }
-
-        function renderList() {
-            const list = document.getElementById('scooter-list');
+        function renderFleetList(containerId, filter = 'all', search = '') {
+            const container = document.getElementById(containerId);
             const filtered = scooters.filter(s => {
-                const matchFilter = currentFilter === 'all' || s.status === currentFilter;
-                const matchSearch = s.id.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchFilter = filter === 'all' || s.status === filter;
+                const matchSearch = s.id.toLowerCase().includes(search.toLowerCase());
                 return matchFilter && matchSearch;
             });
 
             if (filtered.length === 0) {
-                list.innerHTML =
-                    `<div style="text-align:center;padding:40px 0;color:var(--text-muted);"><i class="fas fa-search" style="font-size:30px;display:block;margin-bottom:10px;"></i>No scooters found</div>`;
+                container.innerHTML =
+                    `<div style="text-align:center;padding:30px 0;color:var(--text-muted);font-size:13px;"><i class="fas fa-search" style="font-size:24px;display:block;margin-bottom:8px;"></i>No scooters found</div>`;
                 return;
             }
 
-            list.innerHTML = filtered.map(s => {
+            container.innerHTML = filtered.map(s => {
                 const earnings = calcEarnings(s.kmDriven);
                 return `
-                            <div class="scooter-card status-${s.status}" data-id="${s.id}" onclick="openModal('${s.id}')">
-                                <div class="scooter-icon">🛵</div>
+                            <div class="scooter-card status-${s.status}" onclick="openModal('${s.id}')">
+                                <div class="scooter-icon"><i class="fas fa-motorcycle"></i></div>
                                 <div class="scooter-info">
                                     <div class="id">${s.id}</div>
                                     <div class="driver-name"><i class="fas fa-user"></i> ${s.driver.name}</div>
@@ -876,29 +1613,71 @@
                                         <span><i class="fas fa-route"></i> ${s.kmDriven.toFixed(1)} km</span>
                                         <span><i class="fas fa-coins"></i> ${earnings.toFixed(1)} TND</span>
                                     </div>
-                                    <div class="location"><i class="fas fa-map-pin"></i> ${s.location}</div>
+                                    <div class="location"><i class="fas fa-location-dot"></i> ${s.location}</div>
                                 </div>
                                 <div class="scooter-right">
                                     <span class="badge ${s.status}">${getStatusLabel(s.status)}</span>
-                                    <div class="battery-text">🔋 ${s.battery}%</div>
+                                    <div class="battery-text"><i class="fas fa-bolt"></i> ${s.battery}%</div>
                                 </div>
                             </div>
                         `;
             }).join('');
         }
 
-        function renderMap() {
+        // =============================================
+        // RENDER ALL STATS
+        // =============================================
+        function renderAllStats() {
+            const total = scooters.length;
+            const green = scooters.filter(s => s.status === 'green').length;
+            const yellow = scooters.filter(s => s.status === 'yellow').length;
+            const red = scooters.filter(s => s.status === 'red').length;
+            const totalEarnings = scooters.reduce((sum, s) => sum + calcEarnings(s.kmDriven), 0);
+            const totalKm = scooters.reduce((sum, s) => sum + s.kmDriven, 0);
+            const avgBattery = Math.round(scooters.reduce((sum, s) => sum + s.battery, 0) / scooters.length);
+            const avgTemp = Math.round(scooters.reduce((sum, s) => sum + s.temp, 0) / scooters.length);
+
+            // Dashboard Tab Stats
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('greenCount').textContent = green;
+            document.getElementById('yellowCount').textContent = yellow;
+            document.getElementById('redCount').textContent = red;
+            document.getElementById('totalEarnings').textContent = totalEarnings.toFixed(1);
+            document.getElementById('avgBattery').textContent = `${avgBattery}%`;
+            document.getElementById('avgTemp').textContent = `${avgTemp}°C`;
+            document.getElementById('totalKm').textContent = totalKm.toFixed(1);
+            document.getElementById('todayEarnings').textContent = totalEarnings.toFixed(1);
+            document.getElementById('todayKm').textContent = totalKm.toFixed(1);
+
+            // Fleet Tab Stats
+            document.getElementById('fleetTotal').textContent = total;
+            document.getElementById('fleetGreen').textContent = green;
+            document.getElementById('fleetYellow').textContent = yellow;
+            document.getElementById('fleetRed').textContent = red;
+            document.getElementById('fleetEarnings').textContent = totalEarnings.toFixed(1);
+
+            // Reports Tab Stats
+            document.getElementById('reportEarnings').textContent = totalEarnings.toFixed(1);
+            document.getElementById('reportKm').textContent = totalKm.toFixed(1);
+            document.getElementById('reportFleetSize').textContent = total;
+            document.getElementById('reportAvgBattery').textContent = `${avgBattery}%`;
+        }
+
+        // =============================================
+        // RENDER MAP
+        // =============================================
+        function renderMap(filter = 'all', search = '') {
             markers.forEach(m => map.removeLayer(m));
             markers = [];
 
             const filtered = scooters.filter(s => {
-                const matchFilter = currentFilter === 'all' || s.status === currentFilter;
-                const matchSearch = s.id.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchFilter = filter === 'all' || s.status === filter;
+                const matchSearch = s.id.toLowerCase().includes(search.toLowerCase());
                 return matchFilter && matchSearch;
             });
 
             filtered.forEach(s => {
-                const color = s.status === 'green' ? '#22c55e' : s.status === 'yellow' ? '#f59e0b' : '#ef4444';
+                const color = s.status === 'green' ? '#22C55E' : s.status === 'yellow' ? '#D4AF37' : '#D32F2F';
                 const marker = L.circleMarker([s.lat, s.lng], {
                     radius: 16,
                     fillColor: color,
@@ -910,11 +1689,11 @@
 
                 const earnings = calcEarnings(s.kmDriven);
                 marker.bindPopup(`
-                            <b style="font-size:16px;">🛵 ${s.id}</b><br>
-                            <span style="color:#3d5a78;">👤 ${s.driver.name}</span><br>
-                            <span style="color:#3d5a78;">🔋 ${s.battery}% · ${getStatusLabel(s.status)}</span><br>
-                            <span style="color:#8b5cf6;">💰 ${earnings.toFixed(1)} TND (${s.kmDriven.toFixed(1)} km)</span><br>
-                            <span style="color:#7a8fa6;font-size:13px;">📍 ${s.location}</span>
+                            <b style="font-size:15px; color:#4A235A;">${s.id}</b><br>
+                            <span style="color:#6C4A7A;"><i class="fas fa-user"></i> ${s.driver.name}</span><br>
+                            <span style="color:#6C4A7A;"><i class="fas fa-bolt"></i> ${s.battery}% · ${getStatusLabel(s.status)}</span><br>
+                            <span style="color:#B388E0;"><i class="fas fa-coins"></i> ${earnings.toFixed(1)} TND</span><br>
+                            <span style="color:#A88B9A;font-size:11px;"><i class="fas fa-location-dot"></i> ${s.location}</span>
                         `);
 
                 marker.on('click', () => {
@@ -932,27 +1711,112 @@
             }
         }
 
-        function renderAll() {
-            renderStats();
-            renderList();
-            renderMap();
+        // =============================================
+        // RENDER REPAIR LIST
+        // =============================================
+        function renderRepairList() {
+            const list = document.getElementById('repairList');
+            list.innerHTML = repairShops.map(shop => `
+                        <div class="repair-card">
+                            <div class="r-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="r-info">
+                                <div class="r-name">${shop.name}</div>
+                                <div class="r-addr"><i class="fas fa-location-dot" style="font-size:9px;"></i> ${shop.address}</div>
+                                <div class="r-phone"><i class="fas fa-phone"></i> ${shop.phone}</div>
+                            </div>
+                        </div>
+                    `).join('');
         }
 
         // =============================================
-        // SEARCH & FILTER
+        // FULL RENDER
+        // =============================================
+        function renderAll() {
+            renderAllStats();
+
+            // Dashboard tab list uses the main search/filter
+            const mainFilter = document.querySelector('#tab-dashboard .filter-btn.active');
+            const mainSearch = document.getElementById('searchInput');
+            const currentFilter = mainFilter ? mainFilter.dataset.filter : 'all';
+            const currentSearch = mainSearch ? mainSearch.value.trim() : '';
+            renderFleetList('scooter-list', currentFilter, currentSearch);
+
+            // Fleet tab list uses its own search/filter
+            const fleetFilter = document.querySelector('#tab-fleet .filter-btn.active');
+            const fleetSearch = document.getElementById('fleetSearchInput');
+            const fleetFilterVal = fleetFilter ? fleetFilter.dataset.filter : 'all';
+            const fleetSearchVal = fleetSearch ? fleetSearch.value.trim() : '';
+            renderFleetList('fleet-list', fleetFilterVal, fleetSearchVal);
+
+            renderMap(currentFilter, currentSearch);
+            renderRepairList();
+        }
+
+        // =============================================
+        // TAB SWITCHING
+        // =============================================
+        document.querySelectorAll('.header-nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Update active tab
+                document.querySelectorAll('.header-nav a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                // Show corresponding content
+                const tabId = link.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+
+                // Re-render to ensure correct data is shown (especially for fleet list)
+                renderAll();
+            });
+        });
+
+        // =============================================
+        // SEARCH & FILTER (Dashboard Tab)
         // =============================================
         document.getElementById('searchInput').addEventListener('input', (e) => {
-            searchQuery = e.target.value.trim();
             renderAll();
         });
 
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        document.querySelectorAll('#tab-dashboard .filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#tab-dashboard .filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                currentFilter = btn.dataset.filter;
                 renderAll();
             });
+        });
+
+        // =============================================
+        // SEARCH & FILTER (Fleet Tab)
+        // =============================================
+        document.getElementById('fleetSearchInput').addEventListener('input', (e) => {
+            renderAll();
+        });
+
+        document.querySelectorAll('#tab-fleet .filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#tab-fleet .filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderAll();
+            });
+        });
+
+        // =============================================
+        // REPAIR TOGGLE
+        // =============================================
+        document.getElementById('repairToggleBtn').addEventListener('click', () => {
+            repairOpen = !repairOpen;
+            const list = document.getElementById('repairList');
+            const btn = document.getElementById('repairToggleBtn');
+            if (repairOpen) {
+                list.classList.add('open');
+                btn.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Services';
+            } else {
+                list.classList.remove('open');
+                btn.innerHTML = '<i class="fas fa-tools"></i> Repair Services';
+            }
         });
 
         // =============================================
@@ -964,25 +1828,24 @@
 
             const earnings = calcEarnings(s.kmDriven);
 
-            document.getElementById('modalTitle').textContent = `🛵 ${s.id}`;
-            document.getElementById('modalSub').textContent = `📍 ${s.location}`;
+            document.getElementById('modalTitle').innerHTML =
+                `<i class="fas fa-motorcycle" style="color: var(--mauve-dark);"></i> ${s.id}`;
+            document.getElementById('modalSub').innerHTML = `<i class="fas fa-location-dot" style="color: var(--text-muted);"></i> ${s.location}`;
             document.getElementById('modalBattery').textContent = `${s.battery}%`;
-            document.getElementById('modalStatus').textContent = `${getStatusIcon(s.status)} ${getStatusLabel(s.status)}`;
-            document.getElementById('modalStatus').style.color = s.status === 'green' ? '#22c55e' : s.status === 'yellow' ?
-                '#f59e0b' : '#ef4444';
+            document.getElementById('modalStatus').textContent = getStatusLabel(s.status);
+            document.getElementById('modalStatus').style.color = s.status === 'green' ? '#22C55E' : s.status === 'yellow' ?
+                '#D4AF37' : '#D32F2F';
             document.getElementById('modalKm').textContent = `${s.kmDriven.toFixed(1)} km`;
             document.getElementById('modalEarnings').textContent = `${earnings.toFixed(1)} TND`;
-            document.getElementById('modalTime').textContent = new Date().toLocaleTimeString();
             document.getElementById('modalTemp').textContent = `${s.temp || 32}°C`;
             document.getElementById('modalTrips').textContent = s.trips || 0;
 
-            const driver = s.driver || { name: 'Unknown', phone: 'N/A', rating: 0, shift: 'N/A', avatar: '?' };
-            document.getElementById('driverName').textContent = driver.name;
-            document.getElementById('driverPhone').innerHTML = `<i class="fas fa-phone"></i> ${driver.phone}`;
-            document.getElementById('driverRating').innerHTML =
-                `<i class="fas fa-star"></i> ${driver.rating} ⭐ (${driver.rating >= 4.5 ? 'Excellent' : driver.rating >= 4 ? 'Good' : 'Average'})`;
-            document.getElementById('driverAvatar').textContent = driver.avatar || driver.name.charAt(0);
-            document.getElementById('modalShift').textContent = driver.shift || 'N/A';
+            const d = s.driver || { name: 'Unknown', phone: 'N/A', rating: 0, shift: 'N/A', avatar: '?' };
+            document.getElementById('driverName').textContent = d.name;
+            document.getElementById('driverPhone').innerHTML = `<i class="fas fa-phone"></i> ${d.phone}`;
+            document.getElementById('driverRating').innerHTML = `<i class="fas fa-star"></i> ${d.rating}`;
+            document.getElementById('driverAvatar').textContent = d.avatar || d.name.charAt(0);
+            document.getElementById('modalShift').textContent = d.shift || 'N/A';
 
             document.getElementById('modal').classList.add('active');
         }
@@ -995,14 +1858,52 @@
         });
 
         // =============================================
-        // THEME TOGGLE
+        // EXPORT (Dashboard Tab)
+        // =============================================
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            generateReport();
+        });
+
+        // =============================================
+        // EXPORT (Reports Tab)
+        // =============================================
+        document.getElementById('reportExportBtn').addEventListener('click', () => {
+            generateReport();
+        });
+
+        function generateReport() {
+            const btn = document.getElementById('exportBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                const totalKm = scooters.reduce((sum, s) => sum + s.kmDriven, 0);
+                const totalEarnings = scooters.reduce((sum, s) => sum + calcEarnings(s.kmDriven), 0);
+                const activeDrivers = scooters.map(s => s.driver.name).join(', ');
+
+                alert(
+                    '✅ RentScoot Fleet Report\n\n' +
+                    `Total: ${scooters.length} | Healthy: ${scooters.filter(s=>s.status==='green').length} | Low: ${scooters.filter(s=>s.status==='yellow').length} | Service: ${scooters.filter(s=>s.status==='red').length}\n\n` +
+                    `💰 Total Earnings: ${totalEarnings.toFixed(1)} TND\n` +
+                    `📏 Total Distance: ${totalKm.toFixed(1)} km\n` +
+                    `📊 Avg per Scooter: ${(totalEarnings / scooters.length).toFixed(1)} TND\n\n` +
+                    `👤 Drivers: ${activeDrivers}`
+                );
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 1500);
+        }
+
+        // =============================================
+        // THEME
         // =============================================
         let dark = false;
         document.getElementById('themeToggle').addEventListener('click', () => {
             dark = !dark;
             document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
             document.getElementById('themeToggle').innerHTML = dark ? '<i class="fas fa-sun"></i>' :
-            '<i class="fas fa-moon"></i>';
+                '<i class="fas fa-moon"></i>';
         });
 
         // =============================================
@@ -1020,34 +1921,9 @@
                 const extraKm = Math.random() * 2;
                 s.kmDriven = Math.round((s.kmDriven + extraKm) * 10) / 10;
                 s.trips = (s.trips || 0) + Math.floor(Math.random() * 2);
+                s.temp = Math.min(50, Math.round(s.temp + (Math.random() * 2 - 1)));
             });
             renderAll();
-        });
-
-        // =============================================
-        // EXPORT REPORT
-        // =============================================
-        document.getElementById('exportBtn').addEventListener('click', () => {
-            const btn = document.getElementById('exportBtn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-            btn.disabled = true;
-
-            setTimeout(() => {
-                const totalKm = scooters.reduce((sum, s) => sum + s.kmDriven, 0);
-                const totalEarnings = scooters.reduce((sum, s) => sum + calcEarnings(s.kmDriven), 0);
-                const activeDrivers = scooters.map(s => s.driver.name).join(', ');
-
-                alert(
-                    '✅ RentScoot Fleet Report\n\n' +
-                    `Total: ${scooters.length} | Healthy: ${scooters.filter(s=>s.status==='green').length} | Low: ${scooters.filter(s=>s.status==='yellow').length} | Service: ${scooters.filter(s=>s.status==='red').length}\n\n` +
-                    `💰 Total Earnings: ${totalEarnings.toFixed(1)} TND\n` +
-                    `📏 Total Distance: ${totalKm.toFixed(1)} km\n` +
-                    `📊 Avg per Scooter: ${(totalEarnings / scooters.length).toFixed(1)} TND\n\n` +
-                    `👤 Drivers: ${activeDrivers}`
-                );
-                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Export Fleet Report';
-                btn.disabled = false;
-            }, 1500);
         });
 
         // =============================================
@@ -1061,6 +1937,7 @@
                 const extraKm = (Math.random() * 1.8);
                 s.kmDriven = Math.round((s.kmDriven + extraKm) * 10) / 10;
                 s.trips = (s.trips || 0) + (Math.random() > 0.7 ? 1 : 0);
+                s.temp = Math.min(50, Math.round(s.temp + (Math.random() * 2 - 1)));
             });
             renderAll();
         }, 15000);
