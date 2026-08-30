@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MobilityWatch · Fleet Dashboard</title>
+
+    <!-- Leaflet CSS + JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #f0f4f9;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --text-primary: #0b1e33;
+            --text-secondary: #3d5a78;
+            --text-muted: #7a8fa6;
+            --border: #e2e8f0;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.12);
+            --radius: 16px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --green: #22c55e;
+            --green-bg: #dcfce7;
+            --yellow: #f59e0b;
+            --yellow-bg: #fef3c7;
+            --red: #ef4444;
+            --red-bg: #fee2e2;
+            --blue: #2563eb;
+            --blue-bg: #dbeafe;
+            --gold: #f59e0b;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --sidebar-bg: #1e293b;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #334155;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background var(--transition), color var(--transition);
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 10px;
+        }
+
+        /* ===== SIDEBAR ===== */
+        #sidebar {
+            width: 380px;
+            min-width: 380px;
+            background: var(--sidebar-bg);
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.04);
+            z-index: 20;
+            transition: background var(--transition), width 0.3s;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .sidebar-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-header h1 span {
+            background: var(--blue);
+            color: white;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .header-actions button {
+            background: var(--border);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-actions button:hover {
+            background: var(--blue);
+            color: white;
+            transform: scale(1.05);
+        }
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .subtitle i {
+            font-size: 10px;
+            color: var(--green);
+        }
+        #live-clock {
+            font-weight: 600;
+            color: var(--blue);
+            font-size: 13px;
+            margin-left: auto;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 10px;
+            text-align: center;
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .stat-card .number {
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        .stat-card .label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .stat-card .number.green {
+            color: var(--green);
+        }
+        .stat-card .number.yellow {
+            color: var(--yellow);
+        }
+        .stat-card .number.red {
+            color: var(--red);
+        }
+        .stat-card .number.blue {
+            color: var(--blue);
+        }
+
+        /* Search */
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 0 14px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .search-box:focus-within {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-bg);
+        }
+        .search-box i {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            padding: 10px 12px;
+            font-size: 13px;
+            width: 100%;
+            outline: none;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Filters */
+        .filter-buttons {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        .filter-btn:hover {
+            background: var(--border);
+        }
+        .filter-btn.active {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+        .filter-btn i {
+            margin-right: 4px;
+            font-size: 11px;
+        }
+
+        /* Scooter List */
+        #scooter-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .scooter-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-left: 4px solid var(--green);
+        }
+        .scooter-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-hover);
+        }
+        .scooter-card.status-green {
+            border-left-color: var(--green);
+        }
+        .scooter-card.status-yellow {
+            border-left-color: var(--yellow);
+        }
+        .scooter-card.status-red {
+            border-left-color: var(--red);
+        }
+
+        .scooter-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            flex-shrink: 0;
+        }
+
+        .scooter-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .scooter-info .id {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .scooter-info .driver-name {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .scooter-info .location {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .scooter-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .scooter-right .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge.green {
+            background: var(--green-bg);
+            color: var(--green);
+        }
+        .badge.yellow {
+            background: var(--yellow-bg);
+            color: var(--yellow);
+        }
+        .badge.red {
+            background: var(--red-bg);
+            color: var(--red);
+        }
+        .battery-text {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* Map */
+        #map {
+            flex: 1;
+            height: 100vh;
+            z-index: 10;
+        }
+
+        /* Export Button */
+        .export-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            background: var(--blue);
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .export-btn:hover {
+            transform: scale(1.01);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--sidebar-bg);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 460px;
+            width: 90%;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s;
+            border: 1px solid var(--border);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-content h2 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .modal-content .modal-sub {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        /* Driver Avatar inside Modal */
+        .driver-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg);
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+        .driver-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .driver-details {
+            flex: 1;
+        }
+        .driver-details .name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .driver-details .phone {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .driver-details .rating {
+            font-size: 13px;
+            color: var(--gold);
+        }
+        .driver-details .rating i {
+            margin-right: 2px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-row .label {
+            color: var(--text-muted);
+        }
+        .detail-row .value {
+            font-weight: 500;
+        }
+        .modal-close {
+            margin-top: 16px;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            background: var(--border);
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-close:hover {
+            background: var(--red);
+            color: white;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .pulse-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+            margin-right: 6px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            #sidebar {
+                width: 320px;
+                min-width: 320px;
+                padding: 16px 14px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 700px) {
+            body {
+                flex-direction: column-reverse;
+            }
+            #sidebar {
+                width: 100%;
+                min-width: unset;
+                height: 50vh;
+                border-radius: 20px 20px 0 0;
+                box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.08);
+            }
+            #map {
+                height: 50vh;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+        }
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stat-card .number {
+                font-size: 18px;
+            }
+            .sidebar-header h1 {
+                font-size: 18px;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== SIDEBAR ===== -->
+    <div id="sidebar">
+        <!-- Header -->
+        <div class="sidebar-header">
+            <h1>🛵 MobilityWatch <span>Beta</span></h1>
+            <div class="header-actions">
+                <button id="themeToggle" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+                <button id="refreshBtn" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </div>
+        <div class="subtitle">
+            <span class="pulse-dot"></span> Live Fleet · Tunis
+            <span id="live-clock">--:--:--</span>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><div class="number blue" id="totalCount">0</div><div class="label">Total</div></div>
+            <div class="stat-card"><div class="number green" id="greenCount">0</div><div class="label">Healthy</div></div>
+            <div class="stat-card"><div class="number yellow" id="yellowCount">0</div><div class="label">Low Battery</div></div>
+            <div class="stat-card"><div class="number red" id="redCount">0</div><div class="label">Service</div></div>
+        </div>
+
+        <!-- Search -->
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search by scooter ID..." />
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all"><i class="fas fa-list"></i> All</button>
+            <button class="filter-btn" data-filter="green"><i class="fas fa-check-circle"></i> Healthy</button>
+            <button class="filter-btn" data-filter="yellow"><i class="fas fa-exclamation-triangle"></i> Low</button>
+            <button class="filter-btn" data-filter="red"><i class="fas fa-exclamation-circle"></i> Service</button>
+        </div>
+
+        <!-- Scooter List -->
+        <div id="scooter-list"></div>
+
+        <!-- Export Button -->
+        <button class="export-btn" id="exportBtn"><i class="fas fa-file-pdf"></i> Export Fleet Report</button>
+    </div>
+
+    <!-- ===== MAP ===== -->
+    <div id="map"></div>
+
+    <!-- ===== MODAL (UPDATED WITH DRIVER INFO) ===== -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">🛵 S-1024</h2>
+            <div class="modal-sub" id="modalSub">📍 Ave Habib Bourguiba</div>
+
+            <!-- Driver Profile Section -->
+            <div class="driver-profile" id="driverProfile">
+                <div class="driver-avatar" id="driverAvatar">F</div>
+                <div class="driver-details">
+                    <div class="name" id="driverName">Fatma Ben Ali</div>
+                    <div class="phone" id="driverPhone"><i class="fas fa-phone"></i> +216 98 765 432</div>
+                    <div class="rating" id="driverRating"><i class="fas fa-star"></i> 4.8 ⭐</div>
+                </div>
+            </div>
+
+            <!-- Scooter Details -->
+            <div class="detail-row"><span class="label">Battery Level</span><span class="value" id="modalBattery">87%</span></div>
+            <div class="detail-row"><span class="label">Status</span><span class="value" id="modalStatus">✅ Healthy</span></div>
+            <div class="detail-row"><span class="label">Shift Start</span><span class="value" id="modalShift">08:30 AM</span></div>
+            <div class="detail-row"><span class="label">Last Updated</span><span class="value" id="modalTime">Just now</span></div>
+            <div class="detail-row"><span class="label">Battery Temp</span><span class="value" id="modalTemp">32°C</span></div>
+            <div class="detail-row"><span class="label">Trips Today</span><span class="value" id="modalTrips">12</span></div>
+
+            <button class="modal-close" id="modalClose">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // 1. MOCK DATA (WITH DRIVER INFO)
+        // =============================================
+        const scooterData = [{
+            id: 'S-1024',
+            lat: 36.8065,
+            lng: 10.1815,
+            battery: 87,
+            status: 'green',
+            location: 'Ave Habib Bourguiba',
+            temp: 32,
+            trips: 12,
+            driver: {
+                name: 'Fatma Ben Ali',
+                phone: '+216 98 765 432',
+                rating: 4.8,
+                shift: '08:30 AM',
+                avatar: 'F'
+            }
+        }, {
+            id: 'S-1025',
+            lat: 36.8120,
+            lng: 10.1750,
+            battery: 23,
+            status: 'yellow',
+            location: 'Rue de Marseille',
+            temp: 38,
+            trips: 8,
+            driver: {
+                name: 'Mohamed Karray',
+                phone: '+216 55 123 456',
+                rating: 4.2,
+                shift: '09:00 AM',
+                avatar: 'M'
+            }
+        }, {
+            id: 'S-1026',
+            lat: 36.7980,
+            lng: 10.1880,
+            battery: 5,
+            status: 'red',
+            location: 'Medina Parking Garage',
+            temp: 45,
+            trips: 3,
+            driver: {
+                name: 'Sara Bouazizi',
+                phone: '+216 22 334 455',
+                rating: 3.9,
+                shift: '07:45 AM',
+                avatar: 'S'
+            }
+        }, {
+            id: 'S-1027',
+            lat: 36.8200,
+            lng: 10.1650,
+            battery: 92,
+            status: 'green',
+            location: 'La Goulette',
+            temp: 29,
+            trips: 18,
+            driver: {
+                name: 'Ahmed Dhahbi',
+                phone: '+216 99 887 766',
+                rating: 4.9,
+                shift: '08:00 AM',
+                avatar: 'A'
+            }
+        }, {
+            id: 'S-1028',
+            lat: 36.7850,
+            lng: 10.1950,
+            battery: 15,
+            status: 'yellow',
+            location: 'El Menzah',
+            temp: 40,
+            trips: 5,
+            driver: {
+                name: 'Nour Jebali',
+                phone: '+216 33 456 789',
+                rating: 4.0,
+                shift: '10:00 AM',
+                avatar: 'N'
+            }
+        }, {
+            id: 'S-1029',
+            lat: 36.8300,
+            lng: 10.1500,
+            battery: 78,
+            status: 'green',
+            location: 'Ave de la République',
+            temp: 31,
+            trips: 14,
+            driver: {
+                name: 'Amira Gharbi',
+                phone: '+216 77 888 999',
+                rating: 4.7,
+                shift: '08:15 AM',
+                avatar: 'A'
+            }
+        }, {
+            id: 'S-1030',
+            lat: 36.8000,
+            lng: 10.2100,
+            battery: 42,
+            status: 'green',
+            location: 'Berges du Lac',
+            temp: 33,
+            trips: 9,
+            driver: {
+                name: 'Youssef Miled',
+                phone: '+216 11 222 333',
+                rating: 4.5,
+                shift: '09:30 AM',
+                avatar: 'Y'
+            }
+        }, {
+            id: 'S-1031',
+            lat: 36.8150,
+            lng: 10.1850,
+            battery: 8,
+            status: 'red',
+            location: 'Bab El Bhar',
+            temp: 43,
+            trips: 2,
+            driver: {
+                name: 'Hela Mansour',
+                phone: '+216 44 555 666',
+                rating: 4.1,
+                shift: '06:30 AM',
+                avatar: 'H'
+            }
+        }, {
+            id: 'S-1032',
+            lat: 36.7900,
+            lng: 10.1700,
+            battery: 65,
+            status: 'green',
+            location: 'Cité Ennasr',
+            temp: 30,
+            trips: 11,
+            driver: {
+                name: 'Karim Ben Amor',
+                phone: '+216 66 777 888',
+                rating: 4.3,
+                shift: '08:45 AM',
+                avatar: 'K'
+            }
+        }, {
+            id: 'S-1033',
+            lat: 36.8350,
+            lng: 10.1450,
+            battery: 95,
+            status: 'green',
+            location: 'Ariana',
+            temp: 27,
+            trips: 22,
+            driver: {
+                name: 'Lamia Fekih',
+                phone: '+216 88 999 000',
+                rating: 4.9,
+                shift: '07:00 AM',
+                avatar: 'L'
+            }
+        }, ];
+
+        let scooters = JSON.parse(JSON.stringify(scooterData));
+        let currentFilter = 'all';
+        let searchQuery = '';
+        let markers = [];
+        let selectedId = null;
+
+        // =============================================
+        // 2. MAP INIT
+        // =============================================
+        const map = L.map('map', {
+            zoomControl: true,
+            fadeAnimation: true,
+            attributionControl: true,
+        }).setView([36.8065, 10.1815], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // =============================================
+        // 3. LIVE CLOCK
+        // =============================================
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('live-clock').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // =============================================
+        // 4. RENDER FUNCTIONS
+        // =============================================
+        function getStatusLabel(status) {
+            return { green: 'Healthy', yellow: 'Low Battery', red: 'Needs Service' } [status] || status;
+        }
+
+        function getStatusIcon(status) {
+            return { green: '✅', yellow: '⚠️', red: '🔴' } [status] || '⚪';
+        }
+
+        function renderStats() {
+            const total = scooters.length;
+            const green = scooters.filter(s => s.status === 'green').length;
+            const yellow = scooters.filter(s => s.status === 'yellow').length;
+            const red = scooters.filter(s => s.status === 'red').length;
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('greenCount').textContent = green;
+            document.getElementById('yellowCount').textContent = yellow;
+            document.getElementById('redCount').textContent = red;
+        }
+
+        function renderList() {
+            const list = document.getElementById('scooter-list');
+            const filtered = scooters.filter(s => {
+                const matchFilter = currentFilter === 'all' || s.status === currentFilter;
+                const matchSearch = s.id.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchFilter && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                list.innerHTML =
+                    `<div style="text-align:center;padding:40px 0;color:var(--text-muted);"><i class="fas fa-search" style="font-size:30px;display:block;margin-bottom:10px;"></i>No scooters found</div>`;
+                return;
+            }
+
+            list.innerHTML = filtered.map(s => `
+                        <div class="scooter-card status-${s.status}" data-id="${s.id}" onclick="openModal('${s.id}')">
+                            <div class="scooter-icon">🛵</div>
+                            <div class="scooter-info">
+                                <div class="id">${s.id}</div>
+                                <div class="driver-name"><i class="fas fa-user" style="font-size:10px;"></i> ${s.driver.name}</div>
+                                <div class="location"><i class="fas fa-map-pin" style="font-size:10px;"></i> ${s.location}</div>
+                            </div>
+                            <div class="scooter-right">
+                                <span class="badge ${s.status}">${getStatusLabel(s.status)}</span>
+                                <div class="battery-text">🔋 ${s.battery}%</div>
+                            </div>
+                        </div>
+                    `).join('');
+        }
+
+        function renderMap() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            const filtered = scooters.filter(s => {
+                const matchFilter = currentFilter === 'all' || s.status === currentFilter;
+                const matchSearch = s.id.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchFilter && matchSearch;
+            });
+
+            filtered.forEach(s => {
+                const color = s.status === 'green' ? '#22c55e' : s.status === 'yellow' ? '#f59e0b' : '#ef4444';
+                const marker = L.circleMarker([s.lat, s.lng], {
+                    radius: 16,
+                    fillColor: color,
+                    color: 'white',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.85,
+                }).addTo(map);
+
+                marker.bindPopup(`
+                            <b style="font-size:16px;">🛵 ${s.id}</b><br>
+                            <span style="color:#3d5a78;">👤 ${s.driver.name}</span><br>
+                            <span style="color:#3d5a78;">🔋 ${s.battery}% · ${getStatusLabel(s.status)}</span><br>
+                            <span style="color:#7a8fa6;font-size:13px;">📍 ${s.location}</span>
+                        `);
+
+                marker.on('click', () => {
+                    openModal(s.id);
+                    map.setView([s.lat, s.lng], 16, { animate: true });
+                });
+
+                markers.push(marker);
+            });
+
+            if (filtered.length === 1) {
+                map.setView([filtered[0].lat, filtered[0].lng], 15, { animate: true });
+            } else {
+                map.setView([36.8065, 10.1815], 13);
+            }
+        }
+
+        function renderAll() {
+            renderStats();
+            renderList();
+            renderMap();
+        }
+
+        // =============================================
+        // 5. SEARCH & FILTER
+        // =============================================
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim();
+            renderAll();
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderAll();
+            });
+        });
+
+        // =============================================
+        // 6. MODAL (UPDATED WITH DRIVER INFO)
+        // =============================================
+        function openModal(id) {
+            const s = scooters.find(s => s.id === id);
+            if (!s) return;
+            selectedId = id;
+
+            // --- Scooter Info ---
+            document.getElementById('modalTitle').textContent = `🛵 ${s.id}`;
+            document.getElementById('modalSub').textContent = `📍 ${s.location}`;
+            document.getElementById('modalBattery').textContent = `${s.battery}%`;
+            document.getElementById('modalStatus').textContent = `${getStatusIcon(s.status)} ${getStatusLabel(s.status)}`;
+            document.getElementById('modalStatus').style.color = s.status === 'green' ? '#22c55e' : s.status === 'yellow' ?
+                '#f59e0b' : '#ef4444';
+            document.getElementById('modalTime').textContent = new Date().toLocaleTimeString();
+            document.getElementById('modalTemp').textContent = `${s.temp || 32}°C`;
+            document.getElementById('modalTrips').textContent = s.trips || 0;
+
+            // --- Driver Info ---
+            const driver = s.driver || { name: 'Unknown', phone: 'N/A', rating: 0, shift: 'N/A', avatar: '?' };
+            document.getElementById('driverName').textContent = driver.name;
+            document.getElementById('driverPhone').innerHTML = `<i class="fas fa-phone"></i> ${driver.phone}`;
+            document.getElementById('driverRating').innerHTML =
+                `<i class="fas fa-star"></i> ${driver.rating} ⭐ (${driver.rating >= 4.5 ? 'Excellent' : driver.rating >= 4 ? 'Good' : 'Average'})`;
+            document.getElementById('driverAvatar').textContent = driver.avatar || driver.name.charAt(0);
+            document.getElementById('modalShift').textContent = driver.shift || 'N/A';
+
+            // Show the modal
+            document.getElementById('modal').classList.add('active');
+        }
+
+        document.getElementById('modalClose').addEventListener('click', () => {
+            document.getElementById('modal').classList.remove('active');
+        });
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) document.getElementById('modal').classList.remove('active');
+        });
+
+        // =============================================
+        // 7. THEME TOGGLE
+        // =============================================
+        let dark = false;
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            dark = !dark;
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            document.getElementById('themeToggle').innerHTML = dark ? '<i class="fas fa-sun"></i>' :
+            '<i class="fas fa-moon"></i>';
+        });
+
+        // =============================================
+        // 8. REFRESH (Simulate real-time update)
+        // =============================================
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            const btn = document.getElementById('refreshBtn');
+            btn.style.animation = 'spin 0.6s linear';
+            setTimeout(() => btn.style.animation = '', 600);
+
+            scooters.forEach(s => {
+                const drain = Math.random() * 3;
+                s.battery = Math.max(0, Math.round(s.battery - drain));
+                s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
+                s.trips = (s.trips || 0) + Math.floor(Math.random() * 2);
+            });
+            renderAll();
+        });
+
+        // =============================================
+        // 9. EXPORT REPORT
+        // =============================================
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const btn = document.getElementById('exportBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Report...';
+            btn.disabled = true;
+            setTimeout(() => {
+                alert(
+                    '✅ Fleet Health Report Generated!\n\n' +
+                    `Total Scooters: ${scooters.length}\n` +
+                    `Healthy: ${scooters.filter(s=>s.status==='green').length}\n` +
+                    `Low Battery: ${scooters.filter(s=>s.status==='yellow').length}\n` +
+                    `Needs Service: ${scooters.filter(s=>s.status==='red').length}\n\n` +
+                    '👤 Active Drivers: ' + scooters.map(s => s.driver.name).join(', ') +
+                    '\n\n📄 This report can be used for bank loan applications.'
+                );
+                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Export Fleet Report';
+                btn.disabled = false;
+            }, 1500);
+        });
+
+        // =============================================
+        // 10. REAL-TIME SIMULATION
+        // =============================================
+        setInterval(() => {
+            scooters.forEach(s => {
+                const drain = (Math.random() * 1.5);
+                s.battery = Math.max(0, Math.round(s.battery - drain));
+                s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
+                s.trips = (s.trips || 0) + (Math.random() > 0.7 ? 1 : 0);
+            });
+            renderAll();
+        }, 15000);
+
+        // =============================================
+        // 11. INITIAL RENDER
+        // =============================================
+        renderAll();
+    </script>
+
+</body>
+</html>
