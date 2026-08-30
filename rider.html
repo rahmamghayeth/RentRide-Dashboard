@@ -9,50 +9,61 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Font Awesome -->
+    <!-- Font Awesome 6 (Free) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
 
     <style>
-        /* ===== RESET & BASE ===== */
+        /* =============================================
+           1. ROOT VARIABLES & THEME
+           ============================================= */
+        :root {
+            --navy: #0A2540;
+            --navy-light: #1A3A5C;
+            --teal: #00D4AA;
+            --teal-dark: #00B894;
+            --gold: #F5A623;
+            --gold-dark: #D48A1E;
+            --danger: #FF4D4F;
+            --success: #00D4AA;
+            --warning: #F5A623;
+            --bg: #F4F7FC;
+            --sidebar-bg: #FFFFFF;
+            --card-bg: #FFFFFF;
+            --text-primary: #0A2540;
+            --text-secondary: #4A5B6E;
+            --text-muted: #8A9BAE;
+            --border: #E2E8F0;
+            --shadow-sm: 0 4px 12px rgba(10, 37, 64, 0.06);
+            --shadow-md: 0 8px 30px rgba(10, 37, 64, 0.10);
+            --shadow-lg: 0 20px 50px rgba(10, 37, 64, 0.18);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0A1628;
+            --sidebar-bg: #141F33;
+            --card-bg: #1A2A44;
+            --text-primary: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --border: #2A3A55;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        /* =============================================
+           2. RESET & BASE
+           ============================================= */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        :root {
-            --bg: #f0f4f9;
-            --sidebar-bg: #ffffff;
-            --card-bg: #ffffff;
-            --text-primary: #0b1e33;
-            --text-secondary: #3d5a78;
-            --text-muted: #7a8fa6;
-            --border: #e2e8f0;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --green: #22c55e;
-            --green-bg: #dcfce7;
-            --yellow: #f59e0b;
-            --yellow-bg: #fef3c7;
-            --red: #ef4444;
-            --red-bg: #fee2e2;
-            --blue: #2563eb;
-            --blue-bg: #dbeafe;
-            --gold: #f59e0b;
-        }
-
-        [data-theme="dark"] {
-            --bg: #0f172a;
-            --sidebar-bg: #1e293b;
-            --card-bg: #1e293b;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border: #334155;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
         }
 
         body {
@@ -68,59 +79,113 @@
         ::-webkit-scrollbar {
             width: 5px;
         }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
         ::-webkit-scrollbar-thumb {
             background: var(--text-muted);
             border-radius: 10px;
         }
 
-        /* ===== SIDEBAR ===== */
+        /* =============================================
+           3. SIDEBAR (MAIN CONTAINER)
+           ============================================= */
         #sidebar {
-            width: 380px;
-            min-width: 380px;
+            width: 440px;
+            min-width: 440px;
             background: var(--sidebar-bg);
-            padding: 24px 20px;
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.04);
+            box-shadow: 4px 0 30px rgba(10, 37, 64, 0.06);
             z-index: 20;
             transition: background var(--transition), width 0.3s;
             overflow: hidden;
+            border-right: 1px solid var(--border);
         }
 
-        .sidebar-header {
+        /* =============================================
+           4. HEADER / LOGO (No Emojis)
+           ============================================= */
+        .app-header {
+            padding: 18px 24px 12px 24px;
+            border-bottom: 1px solid var(--border);
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
+            flex-shrink: 0;
         }
-        .sidebar-header h1 {
-            font-size: 24px;
-            font-weight: 700;
+
+        .logo-wrapper {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
-        .sidebar-header h1 span {
-            background: var(--blue);
+
+        .logo-mark {
+            width: 40px;
+            height: 40px;
+            background: var(--navy);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-            font-size: 12px;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-weight: 500;
+            font-weight: 800;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+            position: relative;
+            overflow: hidden;
         }
+        .logo-mark::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: var(--teal);
+            opacity: 0.3;
+            border-radius: 50% 0 0 0;
+        }
+        .logo-mark span {
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        .logo-text .brand {
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--navy);
+            letter-spacing: -0.3px;
+        }
+        .logo-text .brand .teal {
+            color: var(--teal-dark);
+        }
+        .logo-text .tag {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
         .header-actions {
             display: flex;
-            gap: 8px;
-            align-items: center;
+            gap: 6px;
         }
         .header-actions button {
-            background: var(--border);
-            border: none;
+            background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 50%;
             width: 36px;
             height: 36px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             color: var(--text-secondary);
             transition: var(--transition);
             display: flex;
@@ -128,174 +193,575 @@
             justify-content: center;
         }
         .header-actions button:hover {
-            background: var(--blue);
+            background: var(--navy);
             color: white;
+            border-color: var(--navy);
             transform: scale(1.05);
         }
 
-        .subtitle {
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 24px;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
             color: var(--text-secondary);
-            font-size: 13px;
-            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+        .status-bar .live-indicator {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .subtitle i {
-            font-size: 10px;
-            color: var(--green);
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse-dot 2s infinite;
         }
         #live-clock {
             font-weight: 600;
-            color: var(--blue);
-            font-size: 13px;
-            margin-left: auto;
+            color: var(--navy);
+            font-variant-numeric: tabular-nums;
         }
 
-        /* ===== RIDER CONTENT ===== */
+        /* =============================================
+           5. SCROLLABLE CONTENT AREA
+           ============================================= */
         #riderContent {
-            display: flex;
-            flex-direction: column;
             flex: 1;
             overflow: hidden;
-            padding-top: 4px;
+            padding: 16px 20px 20px 20px;
+        }
+        #riderScrollArea {
+            height: 100%;
+            overflow-y: auto;
+            padding-right: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
+        /* =============================================
+           6. SMART ACTION CENTER (FR-04)
+           ============================================= */
+        .action-hub {
+            background: linear-gradient(145deg, var(--card-bg), var(--bg));
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+        .action-hub .hub-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+        .action-hub .hub-header i {
+            color: var(--teal-dark);
+            font-size: 18px;
+        }
+        .action-hub .hub-header h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+        .action-hub .hub-header .badge-fr {
+            margin-left: auto;
+            font-size: 9px;
+            background: var(--teal);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .action-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--card-bg);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            border-left: 4px solid var(--teal);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: var(--transition);
+        }
+        .action-card:last-child {
+            margin-bottom: 0;
+        }
+        .action-card .ac-icon {
+            font-size: 18px;
+            width: 32px;
+            text-align: center;
+            flex-shrink: 0;
+            color: var(--teal);
+        }
+        .action-card .ac-text {
+            flex: 1;
+            min-width: 0;
+        }
+        .action-card .ac-text .ac-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        .action-card .ac-text .ac-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .action-card .ac-btn {
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 5px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .action-card .ac-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 4px 10px rgba(10, 37, 64, 0.2);
+        }
+
+        /* =============================================
+           7. RIDER CARD (Main Stats)
+           ============================================= */
         .rider-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: var(--radius);
             padding: 24px 20px;
             text-align: center;
-            box-shadow: var(--shadow);
-            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
         }
-        .rider-card .scooter-id-big {
+        .rider-card .scooter-id {
             font-size: 20px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: var(--navy);
+            letter-spacing: -0.3px;
         }
-        .rider-card .driver-name-big {
-            font-size: 15px;
+        .rider-card .scooter-id i {
+            color: var(--teal-dark);
+            margin-right: 6px;
+        }
+        .rider-card .driver-name {
+            font-size: 14px;
             color: var(--text-secondary);
-            margin-bottom: 12px;
+            margin-top: 2px;
+            margin-bottom: 14px;
+        }
+        .rider-card .driver-name i {
+            margin-right: 6px;
+            color: var(--text-muted);
         }
 
-        /* Circular Battery Gauge */
-        .battery-gauge-container {
+        /* Battery Gauge */
+        .gauge-wrap {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 8px 0;
             position: relative;
+            margin: 6px 0;
         }
-        .battery-gauge-svg {
+        .gauge-svg {
             width: 140px;
             height: 140px;
             transform: rotate(-90deg);
         }
-        .battery-gauge-svg .bg {
+        .gauge-svg .bg {
             fill: none;
             stroke: var(--border);
-            stroke-width: 12;
+            stroke-width: 10;
         }
-        .battery-gauge-svg .progress {
+        .gauge-svg .progress {
             fill: none;
-            stroke: var(--green);
-            stroke-width: 12;
+            stroke: var(--teal);
+            stroke-width: 10;
             stroke-linecap: round;
             transition: stroke-dashoffset 0.8s ease, stroke 0.8s ease;
         }
-        .battery-center-text {
+        .gauge-center {
             position: absolute;
             font-size: 32px;
-            font-weight: 700;
+            font-weight: 800;
             color: var(--text-primary);
+            line-height: 1.2;
         }
-        .battery-center-text .sub-text {
+        .gauge-center .sub {
             font-size: 13px;
-            font-weight: 400;
+            font-weight: 500;
             color: var(--text-muted);
             display: block;
         }
 
-        .rider-stats-grid {
+        /* Smart Range Grid */
+        .range-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
-            margin-top: 12px;
+            margin-top: 14px;
         }
-        .rider-stat-item {
+        .range-item {
             background: var(--bg);
-            border-radius: 12px;
-            padding: 12px 4px;
-            text-align: center;
             border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 4px;
+            text-align: center;
         }
-        .rider-stat-item .r-val {
+        .range-item .r-val {
             font-size: 20px;
             font-weight: 700;
+            color: var(--navy);
         }
-        .rider-stat-item .r-label {
+        .range-item .r-val.green {
+            color: var(--teal-dark);
+        }
+        .range-item .r-val.yellow {
+            color: var(--gold);
+        }
+        .range-item .r-val.red {
+            color: var(--danger);
+        }
+        .range-item .r-label {
             font-size: 10px;
             text-transform: uppercase;
             color: var(--text-muted);
             font-weight: 600;
+            letter-spacing: 0.4px;
             margin-top: 2px;
         }
-        .rider-stat-item .r-val.green {
-            color: var(--green);
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
         }
-        .rider-stat-item .r-val.yellow {
-            color: var(--yellow);
+        .stat-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 4px;
+            text-align: center;
         }
-        .rider-stat-item .r-val.red {
-            color: var(--red);
+        .stat-item .s-val {
+            font-size: 20px;
+            font-weight: 700;
         }
-        .rider-stat-item .r-val.blue {
-            color: var(--blue);
+        .stat-item .s-val.blue {
+            color: var(--navy);
+        }
+        .stat-item .s-val.green {
+            color: var(--teal-dark);
+        }
+        .stat-item .s-val.gold {
+            color: var(--gold);
+        }
+        .stat-item .s-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
         }
 
-        .rider-location-box {
+        /* Location */
+        .location-box {
             background: var(--bg);
-            border-radius: 12px;
-            padding: 12px 16px;
             border: 1px solid var(--border);
-            font-size: 14px;
-            margin-top: 10px;
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 13px;
+            margin-top: 14px;
             display: flex;
             align-items: center;
             gap: 10px;
             color: var(--text-secondary);
         }
-        .rider-location-box i {
-            color: var(--blue);
-            font-size: 18px;
+        .location-box i {
+            color: var(--teal-dark);
+            font-size: 16px;
         }
 
-        .rider-footer {
+        /* =============================================
+           8. TRIP CONTROLS
+           ============================================= */
+        .trip-controls {
+            margin-top: 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+        .trip-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .trip-cost {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--navy);
+        }
+        .trip-cost .tnd {
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .trip-timer {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+        .trip-timer i {
+            margin-right: 6px;
+            color: var(--text-muted);
+        }
+
+        .trip-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .trip-buttons button {
+            padding: 10px 12px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+        }
+        .trip-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-start {
+            background: var(--navy);
+            color: white;
+            flex: 2;
+        }
+        .btn-start.active {
+            background: var(--danger);
+        }
+        .btn-start.active:hover {
+            background: #D9363E;
+        }
+        .btn-nav {
+            background: var(--bg);
+            border: 1px solid var(--border) !important;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        .btn-nav:hover {
+            background: var(--border);
+        }
+        .btn-sos {
+            background: var(--danger);
+            color: white;
+            flex: 1;
+        }
+        .btn-sos:hover {
+            background: #D9363E;
+        }
+
+        /* =============================================
+           9. REPAIR SERVICES
+           ============================================= */
+        .repair-section {
+            flex-shrink: 0;
+        }
+        .repair-toggle {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .repair-toggle:hover {
+            background: var(--navy);
+            color: white;
+            border-color: var(--navy);
+        }
+        .repair-toggle i {
+            color: var(--teal-dark);
+        }
+        .repair-toggle:hover i {
+            color: white;
+        }
+        .repair-list {
+            display: none;
+            margin-top: 10px;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .repair-list.open {
+            display: flex;
+        }
+        .repair-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: var(--transition);
+        }
+        .repair-card:hover {
+            box-shadow: var(--shadow-sm);
+        }
+        .repair-card .r-icon {
+            font-size: 18px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--teal);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .repair-card .r-info {
+            flex: 1;
+        }
+        .repair-card .r-info .r-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .repair-card .r-info .r-addr {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .repair-card .r-info .r-phone {
+            font-size: 11px;
+            color: var(--teal-dark);
+            font-weight: 500;
+        }
+
+        /* =============================================
+           10. RIDE HISTORY
+           ============================================= */
+        .history-section {
+            flex-shrink: 0;
+        }
+        .history-header {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+        }
+        .history-header i {
+            color: var(--teal-dark);
+        }
+        .history-table {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .history-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1.5fr;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .history-row:last-child {
+            border-bottom: none;
+        }
+        .history-row.header {
+            background: var(--bg);
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .history-row .h-drain {
+            font-weight: 600;
+        }
+        .history-row .h-drain.low {
+            color: var(--teal-dark);
+        }
+        .history-row .h-drain.medium {
+            color: var(--gold);
+        }
+        .history-row .h-drain.high {
+            color: var(--danger);
+        }
+
+        .footer-note {
             text-align: center;
             color: var(--text-muted);
-            font-size: 11px;
-            margin-top: auto;
-            padding: 10px 0;
+            font-size: 10px;
+            padding: 12px 0 4px 0;
+            flex-shrink: 0;
         }
 
-        /* ===== MAP ===== */
+        /* =============================================
+           11. MAP
+           ============================================= */
         #map {
             flex: 1;
             height: 100vh;
             z-index: 10;
+            background: var(--bg);
         }
 
-        /* ===== MODAL ===== */
+        /* =============================================
+           12. MODAL
+           ============================================= */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(10, 37, 64, 0.6);
             backdrop-filter: blur(6px);
             z-index: 999;
             display: none;
@@ -309,15 +775,16 @@
         .modal-content {
             background: var(--sidebar-bg);
             border-radius: 20px;
-            padding: 30px;
+            padding: 32px;
             max-width: 420px;
             width: 90%;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-lg);
             animation: slideUp 0.3s;
             border: 1px solid var(--border);
         }
         .modal-content h2 {
             font-size: 20px;
+            color: var(--navy);
             margin-bottom: 4px;
         }
         .modal-content .modal-sub {
@@ -331,7 +798,7 @@
             gap: 16px;
             background: var(--bg);
             padding: 14px 18px;
-            border-radius: 14px;
+            border-radius: var(--radius-sm);
             margin-bottom: 16px;
             border: 1px solid var(--border);
         }
@@ -339,7 +806,7 @@
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: var(--blue);
+            background: var(--navy);
             color: white;
             display: flex;
             align-items: center;
@@ -351,6 +818,7 @@
         .driver-details .name {
             font-weight: 600;
             font-size: 16px;
+            color: var(--text-primary);
         }
         .driver-details .phone {
             font-size: 13px;
@@ -375,13 +843,14 @@
         }
         .detail-row .value {
             font-weight: 500;
+            color: var(--text-primary);
         }
         .modal-close {
             margin-top: 16px;
             padding: 10px;
             width: 100%;
             border: none;
-            border-radius: 12px;
+            border-radius: var(--radius-sm);
             background: var(--border);
             color: var(--text-primary);
             font-weight: 600;
@@ -390,190 +859,366 @@
             font-family: 'Inter', sans-serif;
         }
         .modal-close:hover {
-            background: var(--red);
+            background: var(--danger);
             color: white;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+        /* =============================================
+           13. SOS OVERLAY
+           ============================================= */
+        #sosOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(180, 20, 20, 0.92);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            animation: pulseSOS 1.4s infinite;
+            padding: 24px;
         }
-        @keyframes slideUp {
-            from {
-                transform: translateY(30px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        #sosOverlay.active {
+            display: flex;
         }
-        @keyframes pulse {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
+        #sosOverlay .sos-icon {
+            font-size: 72px;
+            margin-bottom: 16px;
+            animation: pulseIcon 1s infinite;
         }
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+        #sosOverlay h1 {
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 8px;
         }
-        .pulse-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--green);
-            animation: pulse 2s infinite;
-            margin-right: 6px;
+        #sosOverlay p {
+            font-size: 16px;
+            max-width: 440px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+        #sosOverlay .sos-loc {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 500;
+        }
+        #sosOverlay .sos-close-btn {
+            margin-top: 32px;
+            padding: 12px 44px;
+            border: none;
+            border-radius: 50px;
+            background: white;
+            color: #B01414;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        #sosOverlay .sos-close-btn:hover {
+            transform: scale(1.05);
+            background: #FEF2F2;
         }
 
-        @media (max-width: 900px) {
-            #sidebar {
-                width: 320px;
-                min-width: 320px;
-                padding: 16px 14px;
-            }
+        /* =============================================
+           14. KEYFRAMES
+           ============================================= */
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
         }
-        @media (max-width: 700px) {
-            body {
-                flex-direction: column-reverse;
-            }
-            #sidebar {
-                width: 100%;
-                min-width: unset;
-                height: 50vh;
+        @keyframes pulseSOS {
+            0%, 100% { background: rgba(180, 20, 20, 0.92); }
+            50% { background: rgba(200, 40, 40, 0.96); }
+        }
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* =============================================
+           15. RESPONSIVE
+           ============================================= */
+        @media (max-width: 1000px) {
+            #sidebar { width: 380px; min-width: 380px; }
+        }
+        @media (max-width: 768px) {
+            body { flex-direction: column-reverse; }
+            #sidebar { 
+                width: 100%; 
+                min-width: unset; 
+                height: 58vh; 
                 border-radius: 20px 20px 0 0;
+                border-right: none;
+                border-top: 1px solid var(--border);
             }
-            #map {
-                height: 50vh;
-            }
-            .battery-gauge-svg {
-                width: 100px;
-                height: 100px;
-            }
-            .battery-center-text {
-                font-size: 24px;
-            }
+            #map { height: 42vh; }
+            .gauge-svg { width: 110px; height: 110px; }
+            .gauge-center { font-size: 26px; }
+            .app-header { padding: 14px 16px; }
+            .status-bar { padding: 6px 16px; font-size: 11px; }
+            #riderContent { padding: 12px 14px; }
+            .action-card { flex-wrap: wrap; }
+            .action-card .ac-btn { width: 100%; text-align: center; }
         }
         @media (max-width: 480px) {
-            .sidebar-header h1 {
-                font-size: 18px;
-            }
-            .rider-stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .modal-content {
-                padding: 20px;
-            }
+            .logo-text .brand { font-size: 16px; }
+            .logo-mark { width: 32px; height: 32px; font-size: 16px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .range-grid { grid-template-columns: 1fr 1fr; }
+            .trip-buttons button { font-size: 11px; padding: 8px; }
+            .modal-content { padding: 20px; }
+            .history-row { grid-template-columns: 1fr 1fr 1fr; font-size: 10px; padding: 6px 12px; }
+            #sosOverlay h1 { font-size: 26px; }
+            #sosOverlay .sos-icon { font-size: 56px; }
+            .action-hub { padding: 12px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== SIDEBAR ===== -->
+    <!-- ============================================= -->
+    <!-- SIDEBAR -->
+    <!-- ============================================= -->
     <div id="sidebar">
-        <div class="sidebar-header">
-            <h1>🛵 RentScoot <span>Rider</span></h1>
+        
+        <!-- Header with Custom Logo (No Emojis) -->
+        <div class="app-header">
+            <div class="logo-wrapper">
+                <div class="logo-mark"><span>R</span></div>
+                <div class="logo-text">
+                    <span class="brand">Rent<span class="teal">Scoot</span></span>
+                    <span class="tag">Rider Portal</span>
+                </div>
+            </div>
             <div class="header-actions">
-                <button id="themeToggle" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+                <button id="themeToggle" title="Toggle Theme"><i class="fas fa-moon"></i></button>
                 <button id="refreshBtn" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
             </div>
         </div>
-        <div class="subtitle">
-            <span class="pulse-dot"></span> Live Status · Tunis
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="live-indicator">
+                <span class="status-dot"></span>
+                <span>Live Fleet · Tunis</span>
+            </div>
             <span id="live-clock">--:--:--</span>
         </div>
 
-        <!-- ===== RIDER DASHBOARD ===== -->
+        <!-- ============================================= -->
+        <!-- SCROLLABLE CONTENT -->
+        <!-- ============================================= -->
         <div id="riderContent">
-            <div class="rider-card">
-                <div class="scooter-id-big" id="riderScooterId">🛵 S-1027</div>
-                <div class="driver-name-big" id="riderDriverName">👤 Ahmed Dhahbi</div>
+            <div id="riderScrollArea">
 
-                <!-- Battery Gauge -->
-                <div class="battery-gauge-container">
-                    <svg class="battery-gauge-svg" viewBox="0 0 120 120">
-                        <circle class="bg" cx="60" cy="60" r="50" />
-                        <circle class="progress" id="batteryCircle" cx="60" cy="60" r="50"
-                        stroke-dasharray="314.16" stroke-dashoffset="314.16" />
-                    </svg>
-                    <div class="battery-center-text">
-                        <span id="riderBatteryPct">92%</span>
-                        <span class="sub-text" id="riderBatteryStatus">Excellent</span>
+                <!-- 1. SMART ACTION HUB (FR-04) -->
+                <div class="action-hub">
+                    <div class="hub-header">
+                        <i class="fas fa-brain"></i>
+                        <h3>Smart Decision Hub</h3>
+                        <span class="badge-fr">FR-04</span>
+                    </div>
+
+                    <!-- Action: Battery -->
+                    <div class="action-card" id="actionBattery" style="border-left-color: var(--teal);">
+                        <i class="fas fa-bolt ac-icon" id="actionBatteryIcon" style="color: var(--teal);"></i>
+                        <div class="ac-text">
+                            <div class="ac-title" id="actionBatteryTitle">Battery is Excellent</div>
+                            <div class="ac-desc" id="actionBatteryDesc">You have plenty of range. Keep riding.</div>
+                        </div>
+                        <button class="ac-btn" id="actionBatteryBtn">Find Charge</button>
+                    </div>
+
+                    <!-- Action: Temperature -->
+                    <div class="action-card" id="actionTemp" style="border-left-color: var(--gold);">
+                        <i class="fas fa-thermometer-half ac-icon" id="actionTempIcon" style="color: var(--gold);"></i>
+                        <div class="ac-text">
+                            <div class="ac-title" id="actionTempTitle">Battery Temp: Normal</div>
+                            <div class="ac-desc" id="actionTempDesc">Scooter is operating within safe limits.</div>
+                        </div>
+                        <button class="ac-btn" id="actionTempBtn" style="background: var(--gold); color: var(--navy);">Get Tip</button>
+                    </div>
+
+                    <!-- Action: Finance -->
+                    <div class="action-card" id="actionFinance" style="border-left-color: var(--navy);">
+                        <i class="fas fa-coins ac-icon" id="actionFinanceIcon" style="color: var(--navy);"></i>
+                        <div class="ac-text">
+                            <div class="ac-title" id="actionFinanceTitle">You are earning today</div>
+                            <div class="ac-desc" id="actionFinanceDesc">You have driven 22.7 km. Keep going.</div>
+                        </div>
+                        <button class="ac-btn" id="actionFinanceBtn" style="background: var(--navy);">View Stats</button>
                     </div>
                 </div>
 
-                <!-- Rider Stats -->
-                <div class="rider-stats-grid">
-                    <div class="rider-stat-item">
-                        <div class="r-val blue" id="riderTrips">18</div>
-                        <div class="r-label">Trips Today</div>
+                <!-- 2. RIDER CARD -->
+                <div class="rider-card">
+                    <div class="scooter-id"><i class="fas fa-motorcycle"></i> <span id="riderScooterId">S-1027</span></div>
+                    <div class="driver-name"><i class="fas fa-user"></i> <span id="riderDriverName">Ahmed Dhahbi</span></div>
+
+                    <!-- Battery Gauge -->
+                    <div class="gauge-wrap">
+                        <svg class="gauge-svg" viewBox="0 0 120 120">
+                            <circle class="bg" cx="60" cy="60" r="50" />
+                            <circle class="progress" id="batteryCircle" cx="60" cy="60" r="50"
+                            stroke-dasharray="314.16" stroke-dashoffset="314.16" />
+                        </svg>
+                        <div class="gauge-center">
+                            <span id="riderBatteryPct">92%</span>
+                            <span class="sub" id="riderBatteryStatus">Excellent</span>
+                        </div>
                     </div>
-                    <div class="rider-stat-item">
-                        <div class="r-val green" id="riderKm">22.7</div>
-                        <div class="r-label">KM Driven</div>
+
+                    <!-- Range Grid -->
+                    <div class="range-grid">
+                        <div class="range-item">
+                            <div class="r-val green" id="riderRange">45</div>
+                            <div class="r-label">Est. Range (km)</div>
+                        </div>
+                        <div class="range-item">
+                            <div class="r-val" id="riderTimeLeft" style="color: var(--navy);">1h 15m</div>
+                            <div class="r-label">Time to Empty</div>
+                        </div>
                     </div>
-                    <div class="rider-stat-item">
-                        <div class="r-val" id="riderTemp" style="color: #f59e0b;">29°C</div>
-                        <div class="r-label">Battery Temp</div>
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="s-val blue" id="riderTrips">18</div>
+                            <div class="s-label">Trips Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="s-val green" id="riderKm">22.7</div>
+                            <div class="s-label">Km Driven</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="s-val gold" id="riderTemp">29°C</div>
+                            <div class="s-label">Battery Temp</div>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="location-box">
+                        <i class="fas fa-location-dot"></i>
+                        <span id="riderLocation">La Goulette, Tunis</span>
+                    </div>
+
+                    <!-- Trip Controls -->
+                    <div class="trip-controls">
+                        <div class="trip-stats">
+                            <span class="trip-cost"><i class="fas fa-coins" style="color: var(--gold); margin-right: 6px;"></i> <span id="tripCostDisplay">0.0</span> <span class="tnd">TND</span></span>
+                            <span class="trip-timer"><i class="fas fa-clock"></i> <span id="tripTimerDisplay">00:00</span></span>
+                        </div>
+                        <div class="trip-buttons">
+                            <button id="tripToggleBtn" class="btn-start"><i class="fas fa-play"></i> Start Trip</button>
+                            <button id="navigateBtn" class="btn-nav"><i class="fas fa-location-arrow"></i> Navigate</button>
+                            <button id="sosBtn" class="btn-sos"><i class="fas fa-bell"></i> SOS</button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Location -->
-                <div class="rider-location-box">
-                    <i class="fas fa-map-pin"></i>
-                    <span id="riderLocation">📍 La Goulette, Tunis</span>
+                <!-- 3. REPAIR SERVICES -->
+                <div class="repair-section">
+                    <button class="repair-toggle" id="repairToggleBtn">
+                        <i class="fas fa-tools"></i> Battery Repair & Replacement Services
+                    </button>
+                    <div class="repair-list" id="repairList"></div>
                 </div>
-            </div>
 
-            <div class="rider-footer">
-                <i class="fas fa-shield-alt"></i> Your scooter health is monitored in real-time.
+                <!-- 4. RIDE HISTORY -->
+                <div class="history-section">
+                    <div class="history-header">
+                        <i class="fas fa-chart-line"></i> Ride History & Battery Insights
+                    </div>
+                    <div class="history-table" id="historyTable">
+                        <div class="history-row header">
+                            <span>Day</span>
+                            <span>Distance</span>
+                            <span>Battery Drain</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-note">
+                    <i class="fas fa-shield-alt"></i> Your scooter health is monitored in real-time.
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== MAP ===== -->
+    <!-- ============================================= -->
+    <!-- MAP -->
+    <!-- ============================================= -->
     <div id="map"></div>
 
-    <!-- ===== MODAL ===== -->
+    <!-- ============================================= -->
+    <!-- MODAL -->
+    <!-- ============================================= -->
     <div class="modal-overlay" id="modal">
         <div class="modal-content">
-            <h2 id="modalTitle">🛵 S-1027</h2>
-            <div class="modal-sub" id="modalSub">📍 La Goulette</div>
-            <div class="driver-profile" id="driverProfile">
+            <h2 id="modalTitle"><i class="fas fa-motorcycle" style="color: var(--teal-dark);"></i> S-1027</h2>
+            <div class="modal-sub" id="modalSub"><i class="fas fa-location-dot" style="color: var(--text-muted);"></i> La Goulette</div>
+            <div class="driver-profile">
                 <div class="driver-avatar" id="driverAvatar">A</div>
                 <div class="driver-details">
                     <div class="name" id="driverName">Ahmed Dhahbi</div>
                     <div class="phone" id="driverPhone"><i class="fas fa-phone"></i> +216 99 887 766</div>
-                    <div class="rating" id="driverRating"><i class="fas fa-star"></i> 4.9 ⭐</div>
+                    <div class="rating" id="driverRating"><i class="fas fa-star"></i> 4.9</div>
                 </div>
             </div>
             <div class="detail-row"><span class="label">Battery</span><span class="value" id="modalBattery">92%</span></div>
-            <div class="detail-row"><span class="label">Status</span><span class="value" id="modalStatus">✅ Healthy</span></div>
+            <div class="detail-row"><span class="label">Status</span><span class="value" id="modalStatus">Healthy</span></div>
             <div class="detail-row"><span class="label">Distance Today</span><span class="value" id="modalKm">22.7 km</span></div>
             <div class="detail-row"><span class="label">Battery Temp</span><span class="value" id="modalTemp">29°C</span></div>
             <div class="detail-row"><span class="label">Trips Today</span><span class="value" id="modalTrips">18</span></div>
-            <button class="modal-close" id="modalClose">Close</button>
+            <button class="modal-close" id="modalClose"><i class="fas fa-times"></i> Close</button>
         </div>
     </div>
 
+    <!-- ============================================= -->
+    <!-- SOS OVERLAY -->
+    <!-- ============================================= -->
+    <div id="sosOverlay">
+        <div class="sos-icon"><i class="fas fa-triangle-exclamation"></i></div>
+        <h1>SOS ALERT</h1>
+        <p>Your live location has been shared with your emergency contacts and the fleet owner.</p>
+        <p>Help is on the way.</p>
+        <div class="sos-loc"><i class="fas fa-location-dot"></i> <span id="sosLocationText">La Goulette, Tunis</span></div>
+        <button class="sos-close-btn" id="sosCloseBtn"><i class="fas fa-check"></i> Cancel Alert</button>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ============================================= -->
     <script>
         // =============================================
         // CONFIGURATION
         // =============================================
         const RIDER_SCOOTER_ID = 'S-1027';
+        const AVG_SPEED_KPH = 25;
+        const RATE_PER_KM = 1.5;
 
         // =============================================
         // MOCK DATA
@@ -690,11 +1335,41 @@
             driver: { name: 'Lamia Fekih', phone: '+216 88 999 000', rating: 4.9, avatar: 'L' }
         }, ];
 
+        const repairShops = [{
+            name: 'El Manar Batteries',
+            address: '15 Rue du Koweït, Tunis 1002',
+            phone: '+216 71 234 567'
+        }, {
+            name: 'ScootFix Tunis',
+            address: 'Avenue Habib Bourguiba, Tunis 1001',
+            phone: '+216 29 876 543'
+        }, {
+            name: 'Mobility Care Center',
+            address: 'Cité Ennasr, Ariana 2080',
+            phone: '+216 55 667 889'
+        }, ];
+
+        const rideHistory = [
+            { day: 'Mon', km: 18.5, drain: 22 },
+            { day: 'Tue', km: 24.2, drain: 30 },
+            { day: 'Wed', km: 12.0, drain: 15 },
+            { day: 'Thu', km: 31.8, drain: 38 },
+            { day: 'Fri', km: 8.5, drain: 10 },
+            { day: 'Sat', km: 15.3, drain: 19 },
+            { day: 'Sun', km: 22.7, drain: 28 },
+        ];
+
         let scooters = JSON.parse(JSON.stringify(scooterData));
         let markers = [];
+        let repairOpen = false;
+        let tripActive = false;
+        let tripDistance = 0;
+        let tripCost = 0;
+        let tripSeconds = 0;
+        let tripInterval = null;
 
         // =============================================
-        // MAP INIT
+        // MAP
         // =============================================
         const map = L.map('map', {
             zoomControl: true,
@@ -714,7 +1389,9 @@
         }
 
         function getStatusIcon(status) {
-            return { green: '✅', yellow: '⚠️', red: '🔴' } [status] || '⚪';
+            return { green: 'fa-circle-check', yellow: 'fa-triangle-exclamation', red: 'fa-circle-exclamation' } [
+                status
+            ] || 'fa-circle';
         }
 
         function getBatteryStatus(battery) {
@@ -725,10 +1402,30 @@
         }
 
         function getBatteryColor(battery) {
-            if (battery >= 70) return '#22c55e';
-            if (battery >= 40) return '#f59e0b';
-            if (battery >= 15) return '#f97316';
-            return '#ef4444';
+            if (battery >= 70) return '#00D4AA';
+            if (battery >= 40) return '#F5A623';
+            if (battery >= 15) return '#F97316';
+            return '#FF4D4F';
+        }
+
+        function calcRange(battery) {
+            return Math.round(battery * 1.2);
+        }
+
+        function calcTimeToEmpty(range) {
+            const hours = range / AVG_SPEED_KPH;
+            if (hours < 1) {
+                return `${Math.round(hours * 60)}m`;
+            }
+            const h = Math.floor(hours);
+            const m = Math.round((hours - h) * 60);
+            return `${h}h ${m}m`;
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         }
 
         // =============================================
@@ -750,7 +1447,7 @@
             const rider = scooters.find(s => s.id === RIDER_SCOOTER_ID);
             if (!rider) return;
 
-            const color = rider.status === 'green' ? '#22c55e' : rider.status === 'yellow' ? '#f59e0b' : '#ef4444';
+            const color = rider.status === 'green' ? '#00D4AA' : rider.status === 'yellow' ? '#F5A623' : '#FF4D4F';
             const marker = L.circleMarker([rider.lat, rider.lng], {
                 radius: 22,
                 fillColor: color,
@@ -761,10 +1458,10 @@
             }).addTo(map);
 
             marker.bindPopup(`
-                        <b style="font-size:18px;">🛵 ${rider.id}</b><br>
-                        <span style="color:#3d5a78;">👤 ${rider.driver.name}</span><br>
-                        <span style="color:#3d5a78;">🔋 ${rider.battery}% · ${getStatusLabel(rider.status)}</span><br>
-                        <span style="color:#7a8fa6;font-size:13px;">📍 ${rider.location}</span>
+                        <b style="font-size:18px; color:#0A2540;">${rider.id}</b><br>
+                        <span style="color:#4A5B6E;"><i class="fas fa-user"></i> ${rider.driver.name}</span><br>
+                        <span style="color:#4A5B6E;"><i class="fas fa-bolt"></i> ${rider.battery}% · ${getStatusLabel(rider.status)}</span><br>
+                        <span style="color:#8A9BAE;font-size:13px;"><i class="fas fa-location-dot"></i> ${rider.location}</span>
                     `);
 
             marker.on('click', () => {
@@ -780,13 +1477,15 @@
             const s = scooters.find(s => s.id === RIDER_SCOOTER_ID);
             if (!s) return;
 
-            document.getElementById('riderScooterId').textContent = `🛵 ${s.id}`;
-            document.getElementById('riderDriverName').textContent = `👤 ${s.driver.name}`;
-            document.getElementById('riderLocation').textContent = `📍 ${s.location}`;
+            // Basic Info
+            document.getElementById('riderScooterId').textContent = s.id;
+            document.getElementById('riderDriverName').textContent = s.driver.name;
+            document.getElementById('riderLocation').textContent = `${s.location}`;
             document.getElementById('riderTrips').textContent = s.trips || 0;
             document.getElementById('riderKm').textContent = s.kmDriven.toFixed(1);
             document.getElementById('riderTemp').textContent = `${s.temp || 32}°C`;
 
+            // Battery Gauge
             const pct = s.battery;
             const circle = document.getElementById('batteryCircle');
             const circumference = 314.16;
@@ -797,6 +1496,162 @@
             const statusText = getBatteryStatus(pct);
             document.getElementById('riderBatteryStatus').textContent = statusText;
             document.getElementById('riderBatteryStatus').style.color = getBatteryColor(pct);
+
+            // Range
+            const range = calcRange(pct);
+            const timeStr = calcTimeToEmpty(range);
+            document.getElementById('riderRange').textContent = range;
+            document.getElementById('riderTimeLeft').textContent = timeStr;
+            const rangeEl = document.getElementById('riderRange');
+            rangeEl.className = 'r-val ' + (pct >= 50 ? 'green' : pct >= 20 ? 'yellow' : 'red');
+
+            // Repair List
+            const repairList = document.getElementById('repairList');
+            repairList.innerHTML = repairShops.map(shop => `
+                        <div class="repair-card">
+                            <div class="r-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="r-info">
+                                <div class="r-name">${shop.name}</div>
+                                <div class="r-addr"><i class="fas fa-location-dot" style="font-size:10px;"></i> ${shop.address}</div>
+                                <div class="r-phone"><i class="fas fa-phone"></i> ${shop.phone}</div>
+                            </div>
+                        </div>
+                    `).join('');
+
+            // History
+            const historyTable = document.getElementById('historyTable');
+            while (historyTable.children.length > 1) {
+                historyTable.removeChild(historyTable.lastChild);
+            }
+            const updatedHistory = rideHistory.map((h, index) => {
+                if (index === rideHistory.length - 1) {
+                    const drain = Math.round(100 - s.battery);
+                    return { ...h, drain: Math.max(0, drain) };
+                }
+                return h;
+            });
+            updatedHistory.forEach(h => {
+                const row = document.createElement('div');
+                row.className = 'history-row';
+                let drainClass = 'low';
+                if (h.drain >= 35) drainClass = 'high';
+                else if (h.drain >= 20) drainClass = 'medium';
+                row.innerHTML = `
+                            <span class="h-day">${h.day}</span>
+                            <span class="h-km">${h.km} km</span>
+                            <span class="h-drain ${drainClass}">${h.drain}%</span>
+                        `;
+                historyTable.appendChild(row);
+            });
+
+            // =============================================
+            // FR-04: DATA → INTERPRETATION → ACTION
+            // =============================================
+
+            // Battery Action
+            const batteryEl = document.getElementById('actionBattery');
+            const batteryIcon = document.getElementById('actionBatteryIcon');
+            const batteryTitle = document.getElementById('actionBatteryTitle');
+            const batteryDesc = document.getElementById('actionBatteryDesc');
+            const batteryBtn = document.getElementById('actionBatteryBtn');
+
+            if (s.battery >= 50) {
+                batteryEl.style.borderLeftColor = '#00D4AA';
+                batteryIcon.style.color = '#00D4AA';
+                batteryIcon.className = 'fas fa-bolt ac-icon';
+                batteryTitle.textContent = `Battery: Excellent (${s.battery}%)`;
+                batteryDesc.textContent = 'You have plenty of range. Keep riding.';
+                batteryBtn.textContent = 'Find Charge';
+                batteryBtn.style.background = '#0A2540';
+                batteryBtn.onclick = function() { alert('Navigating to nearest charging point...'); };
+            } else if (s.battery >= 20) {
+                batteryEl.style.borderLeftColor = '#F5A623';
+                batteryIcon.style.color = '#F5A623';
+                batteryIcon.className = 'fas fa-triangle-exclamation ac-icon';
+                batteryTitle.textContent = `Battery: Moderate (${s.battery}%)`;
+                batteryDesc.textContent = `~${calcRange(s.battery)} km left. Plan your next charge.`;
+                batteryBtn.textContent = 'Find Charge';
+                batteryBtn.style.background = '#F5A623';
+                batteryBtn.onclick = function() { alert('Nearest charging points in your area...'); };
+            } else {
+                batteryEl.style.borderLeftColor = '#FF4D4F';
+                batteryIcon.style.color = '#FF4D4F';
+                batteryIcon.className = 'fas fa-circle-exclamation ac-icon';
+                batteryTitle.textContent = `Battery: CRITICAL (${s.battery}%)`;
+                batteryDesc.textContent = 'Charge immediately to avoid getting stranded.';
+                batteryBtn.textContent = 'Charge Now';
+                batteryBtn.style.background = '#FF4D4F';
+                batteryBtn.onclick = function() { alert('Emergency charging route planned!'); };
+            }
+
+            // Temperature Action
+            const tempEl = document.getElementById('actionTemp');
+            const tempIcon = document.getElementById('actionTempIcon');
+            const tempTitle = document.getElementById('actionTempTitle');
+            const tempDesc = document.getElementById('actionTempDesc');
+            const tempBtn = document.getElementById('actionTempBtn');
+
+            if (s.temp < 35) {
+                tempEl.style.borderLeftColor = '#00D4AA';
+                tempIcon.style.color = '#00D4AA';
+                tempIcon.className = 'fas fa-thermometer-half ac-icon';
+                tempTitle.textContent = `Battery Temp: Normal (${s.temp}°C)`;
+                tempDesc.textContent = 'Scooter is operating within safe limits.';
+                tempBtn.textContent = 'Get Tip';
+                tempBtn.style.background = '#F5A623';
+                tempBtn.style.color = '#0A2540';
+                tempBtn.onclick = function() { alert('Tip: Keep riding at a steady pace for optimal efficiency.'); };
+            } else if (s.temp >= 35 && s.temp < 43) {
+                tempEl.style.borderLeftColor = '#F5A623';
+                tempIcon.style.color = '#F5A623';
+                tempIcon.className = 'fas fa-thermometer-three-quarters ac-icon';
+                tempTitle.textContent = `Battery Temp: Warm (${s.temp}°C)`;
+                tempDesc.textContent = 'Reduce speed slightly to cool the battery.';
+                tempBtn.textContent = 'Cooling Tip';
+                tempBtn.style.background = '#F5A623';
+                tempBtn.style.color = '#0A2540';
+                tempBtn.onclick = function() { alert('Tip: Reduce speed and avoid steep hills for the next 10 minutes.'); };
+            } else {
+                tempEl.style.borderLeftColor = '#FF4D4F';
+                tempIcon.style.color = '#FF4D4F';
+                tempIcon.className = 'fas fa-thermometer-full ac-icon';
+                tempTitle.textContent = `Battery Temp: HIGH (${s.temp}°C)`;
+                tempDesc.textContent = 'Stop riding. Let the battery cool down.';
+                tempBtn.textContent = 'Emergency Stop';
+                tempBtn.style.background = '#FF4D4F';
+                tempBtn.style.color = 'white';
+                tempBtn.onclick = function() { alert('Emergency stop triggered. Park safely and let the battery cool for 15 minutes.'); };
+            }
+
+            // Financial Action
+            const financeTitle = document.getElementById('actionFinanceTitle');
+            const financeDesc = document.getElementById('actionFinanceDesc');
+            const financeBtn = document.getElementById('actionFinanceBtn');
+            const totalKm = s.kmDriven || 0;
+            const dailyEarning = Math.round(totalKm * RATE_PER_KM * 10) / 10;
+
+            if (totalKm > 20) {
+                financeTitle.textContent = 'You are earning big today.';
+                financeDesc.textContent = `${dailyEarning} TND earned from ${totalKm.toFixed(1)} km.`;
+                financeBtn.textContent = 'View Stats';
+                financeBtn.style.background = '#00D4AA';
+                financeBtn.style.color = '#0A2540';
+                financeBtn.onclick = function() { alert('Ride summary available in the History section below.'); };
+            } else if (totalKm > 5) {
+                financeTitle.textContent = 'Good progress today.';
+                financeDesc.textContent = `${dailyEarning} TND earned so far. Keep rolling.`;
+                financeBtn.textContent = 'View Stats';
+                financeBtn.style.background = '#00D4AA';
+                financeBtn.style.color = '#0A2540';
+                financeBtn.onclick = function() { alert('Ride summary available in the History section below.'); };
+            } else {
+                financeTitle.textContent = 'Start your journey.';
+                financeDesc.textContent = 'Get on the road to start earning.';
+                financeBtn.textContent = 'Start Ride';
+                financeBtn.style.background = '#0A2540';
+                financeBtn.style.color = 'white';
+                financeBtn.onclick = function() { document.getElementById('tripToggleBtn').click(); };
+            }
         }
 
         function renderAll() {
@@ -805,18 +1660,133 @@
         }
 
         // =============================================
+        // TRIP CONTROLS
+        // =============================================
+        function updateTripDisplay() {
+            document.getElementById('tripCostDisplay').textContent = tripCost.toFixed(1);
+            document.getElementById('tripTimerDisplay').textContent = formatTime(tripSeconds);
+        }
+
+        function startTrip() {
+            if (tripActive) return;
+            const rider = scooters.find(s => s.id === RIDER_SCOOTER_ID);
+            if (!rider) return;
+
+            tripActive = true;
+            tripDistance = 0;
+            tripCost = 0;
+            tripSeconds = 0;
+
+            const btn = document.getElementById('tripToggleBtn');
+            btn.innerHTML = '<i class="fas fa-stop"></i> End Trip';
+            btn.classList.add('active');
+
+            updateTripDisplay();
+
+            tripInterval = setInterval(() => {
+                const deltaKm = (Math.random() * 0.01) + 0.005;
+                tripDistance += deltaKm;
+                tripCost = tripDistance * RATE_PER_KM;
+                tripSeconds += 1;
+
+                const s = scooters.find(s => s.id === RIDER_SCOOTER_ID);
+                if (s) {
+                    const drain = 0.002;
+                    s.battery = Math.max(0, Math.round(s.battery - drain));
+                    s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
+                    s.kmDriven = Math.round((s.kmDriven + deltaKm) * 10) / 10;
+                }
+
+                updateTripDisplay();
+                renderRiderUI();
+                renderMap();
+            }, 1000);
+        }
+
+        function endTrip() {
+            if (!tripActive) return;
+            tripActive = false;
+            clearInterval(tripInterval);
+            tripInterval = null;
+
+            const btn = document.getElementById('tripToggleBtn');
+            btn.innerHTML = '<i class="fas fa-play"></i> Start Trip';
+            btn.classList.remove('active');
+
+            const minutes = Math.floor(tripSeconds / 60);
+            const seconds = tripSeconds % 60;
+            alert(
+                `Trip Ended.\n\n` +
+                `Distance: ${tripDistance.toFixed(2)} km\n` +
+                `Duration: ${minutes}m ${seconds}s\n` +
+                `Cost: ${tripCost.toFixed(2)} TND\n\n` +
+                `Safe riding.`
+            );
+        }
+
+        document.getElementById('tripToggleBtn').addEventListener('click', () => {
+            if (tripActive) {
+                endTrip();
+            } else {
+                startTrip();
+            }
+        });
+
+        // =============================================
+        // NAVIGATE
+        // =============================================
+        document.getElementById('navigateBtn').addEventListener('click', () => {
+            const rider = scooters.find(s => s.id === RIDER_SCOOTER_ID);
+            if (!rider) return;
+            window.open(
+                `https://www.google.com/maps/search/?api=1&query=${rider.lat},${rider.lng}`,
+                '_blank'
+            );
+        });
+
+        // =============================================
+        // SOS
+        // =============================================
+        document.getElementById('sosBtn').addEventListener('click', () => {
+            const rider = scooters.find(s => s.id === RIDER_SCOOTER_ID);
+            if (!rider) return;
+            document.getElementById('sosLocationText').textContent = rider.location;
+            document.getElementById('sosOverlay').classList.add('active');
+        });
+
+        document.getElementById('sosCloseBtn').addEventListener('click', () => {
+            document.getElementById('sosOverlay').classList.remove('active');
+        });
+
+        // =============================================
+        // REPAIR TOGGLE
+        // =============================================
+        document.getElementById('repairToggleBtn').addEventListener('click', () => {
+            repairOpen = !repairOpen;
+            const list = document.getElementById('repairList');
+            const btn = document.getElementById('repairToggleBtn');
+            if (repairOpen) {
+                list.classList.add('open');
+                btn.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Repair Services';
+            } else {
+                list.classList.remove('open');
+                btn.innerHTML = '<i class="fas fa-tools"></i> Battery Repair & Replacement Services';
+            }
+        });
+
+        // =============================================
         // MODAL
         // =============================================
         function openModal(id) {
             const s = scooters.find(s => s.id === id);
             if (!s) return;
 
-            document.getElementById('modalTitle').textContent = `🛵 ${s.id}`;
-            document.getElementById('modalSub').textContent = `📍 ${s.location}`;
+            document.getElementById('modalTitle').innerHTML = `<i class="fas fa-motorcycle" style="color: var(--teal-dark);"></i> ${s.id}`;
+            document.getElementById('modalSub').innerHTML = `<i class="fas fa-location-dot" style="color: var(--text-muted);"></i> ${s.location}`;
             document.getElementById('modalBattery').textContent = `${s.battery}%`;
-            document.getElementById('modalStatus').textContent = `${getStatusIcon(s.status)} ${getStatusLabel(s.status)}`;
-            document.getElementById('modalStatus').style.color = s.status === 'green' ? '#22c55e' : s.status === 'yellow' ?
-                '#f59e0b' : '#ef4444';
+            document.getElementById('modalStatus').textContent = getStatusLabel(s.status);
+            document.getElementById('modalStatus').style.color = s.status === 'green' ? '#00D4AA' : s.status === 'yellow' ?
+                '#F5A623' : '#FF4D4F';
             document.getElementById('modalKm').textContent = `${s.kmDriven.toFixed(1)} km`;
             document.getElementById('modalTemp').textContent = `${s.temp || 32}°C`;
             document.getElementById('modalTrips').textContent = s.trips || 0;
@@ -824,7 +1794,7 @@
             const d = s.driver || { name: 'Unknown', phone: 'N/A', rating: 0, avatar: '?' };
             document.getElementById('driverName').textContent = d.name;
             document.getElementById('driverPhone').innerHTML = `<i class="fas fa-phone"></i> ${d.phone}`;
-            document.getElementById('driverRating').innerHTML = `<i class="fas fa-star"></i> ${d.rating} ⭐`;
+            document.getElementById('driverRating').innerHTML = `<i class="fas fa-star"></i> ${d.rating}`;
             document.getElementById('driverAvatar').textContent = d.avatar || d.name.charAt(0);
 
             document.getElementById('modal').classList.add('active');
@@ -845,7 +1815,7 @@
             dark = !dark;
             document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
             document.getElementById('themeToggle').innerHTML = dark ? '<i class="fas fa-sun"></i>' :
-            '<i class="fas fa-moon"></i>';
+                '<i class="fas fa-moon"></i>';
         });
 
         // =============================================
@@ -858,10 +1828,10 @@
 
             const s = scooters.find(s => s.id === RIDER_SCOOTER_ID);
             if (s) {
-                const drain = Math.random() * 3;
+                const drain = Math.random() * 4;
                 s.battery = Math.max(0, Math.round(s.battery - drain));
                 s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
-                const extraKm = Math.random() * 2;
+                const extraKm = Math.random() * 2.5;
                 s.kmDriven = Math.round((s.kmDriven + extraKm) * 10) / 10;
                 s.trips = (s.trips || 0) + Math.floor(Math.random() * 2);
             }
@@ -869,20 +1839,20 @@
         });
 
         // =============================================
-        // REAL-TIME SIMULATION
+        // REAL-TIME SIMULATION (Background)
         // =============================================
         setInterval(() => {
             const s = scooters.find(s => s.id === RIDER_SCOOTER_ID);
             if (s) {
-                const drain = (Math.random() * 1.2);
-                s.battery = Math.max(0, Math.round(s.battery - drain));
-                s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
-                const extraKm = (Math.random() * 1.8);
-                s.kmDriven = Math.round((s.kmDriven + extraKm) * 10) / 10;
-                s.trips = (s.trips || 0) + (Math.random() > 0.7 ? 1 : 0);
-                renderAll();
+                if (!tripActive) {
+                    const drain = (Math.random() * 0.5);
+                    s.battery = Math.max(0, Math.round(s.battery - drain));
+                    s.status = s.battery >= 50 ? 'green' : s.battery >= 15 ? 'yellow' : 'red';
+                }
+                renderRiderUI();
+                renderMap();
             }
-        }, 15000);
+        }, 5000);
 
         // =============================================
         // INIT
